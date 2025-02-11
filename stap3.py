@@ -1,13 +1,13 @@
 
 import numpy as np
-import scipy.linalg
 
+# dit is for some foking reason tering instabiel maar dat was al te vermoeden
 def diagonalize_basis(basis):
     results = []
     
     for X_i in basis:
         eigenvalues, eigenvectors = np.linalg.eig(X_i)        
-        diag_matrix = np.diag(eigenvalues)
+        diag_matrix = np.diag(eigenvalues) # probably niet nodig
         results.append((diag_matrix, eigenvectors))
     
     return results
@@ -16,7 +16,8 @@ def diagonalize_basis(basis):
 
 basis = [
     np.array([[2, 1], [1, 2]]),  
-    np.array([[3, 2], [2, 3]])  ]
+    np.array([[3, 2], [2, 3]]),
+    np.array([[4, 1], [1, 3]])  ]
 
 
 diagonalized = diagonalize_basis(basis)
