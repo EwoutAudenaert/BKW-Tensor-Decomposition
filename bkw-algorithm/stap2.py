@@ -6,10 +6,10 @@ from scipy import linalg as la
 # Wanneer een singuliere waarde kleiner is dan 1*10^-5 keer de grootste singulier waarde, dan beschouwen we die als nul
 # TODO: bekijk het nut van de drempel
 def nulruimte(M, drempel=1e-5):
-    U, s, Vh = la.svd(M)
+    _, s, Vh = la.svd(M)
     tol = drempel * max(s) if s.size > 0 else 0
-    null_mask = (s <= tol)  # Identifies near-zero singular values
-    return Vh.T[:, null_mask]  # Correct way to extract the null space
+    null_mask = (s <= tol) 
+    return Vh.T[:, null_mask] 
 
 
 # testcase 1: identiteit
@@ -25,3 +25,4 @@ NS2 = nulruimte(M2)
 print("Test: nulruimte van de nul-matrix: ")
 print(NS2)
 print("Vorm: ", NS2.shape)
+
