@@ -52,3 +52,23 @@ tensor =np.array([
 
 def plot_tensor():
     pass
+
+def ttm(X, Zeros, mode):
+    match mode:
+        case 1:
+            X_mode = X.reshape(X.shape[0], -1)
+            Y = Zeros @ X_mode
+            return Y.reshape(Zeros.shape[0], X.shape[1], X.shape[2])
+
+        case 2:
+            X_mode = X.transpose(1, 0, 2).reshape(X.shape[1], -1)
+            Y = Zeros @ X_mode
+            return Y.reshape(Zeros.shape[0], X.shape[0], X.shape[2]).transpose(1, 0, 2)
+
+        case 3:
+            X_mode = X.transpose(2, 0, 1).reshape(X.shape[2], -1)
+            Y = Zeros @ X_mode
+            return Y.reshape(Zeros.shape[0], X.shape[0], X.shape[1]).transpose(1, 2, 0)
+
+        case _:
+            raise ValueError("Mode must be 1, 2, or 3.")
