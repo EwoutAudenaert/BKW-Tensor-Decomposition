@@ -32,20 +32,8 @@ def find_derivative(tensor):
         for i in range(0,dim):
             for j in range(0,dim):
                 u = unit_matrix(i,j,dim)
-                print("i=",i,"j=",j,"mode=",k)
-                matrix.append(vectorize_tensor(ttm(tensor,u,k)))
-
+                matrix.append(vectorize_tensor(ttm(tensor,u,k)).T)
     return matrix
 
-"""
-tensor =np.array([
-    [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-    [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
-    [[19, 20, 21], [22, 23, 24], [25, 26, 27]]
-])
-"""
 
 
-tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-print(find_derivative(tensor))
-#find_derivative(tensor)
