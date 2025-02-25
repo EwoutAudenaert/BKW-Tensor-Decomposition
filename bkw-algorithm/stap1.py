@@ -13,16 +13,21 @@ def find_derivative(tensor):
     [mode1,mode2,mode3] = [ttm(tensor,zeros,i).reshape(-1) for i in range(1,4)] # tenors already flattened
     return np.hstack((mode1, mode2, mode3))
 """
+def unit_matrix(i, j, shape):
+    M = np.zeros((shape,shape))
+    M[i, j] = 1
+    return M
+
 def find_derivative(tensor):
     dim = tensor.shape[0] #cubic -> ok :)
-    zeros = np.zeros((dim, dim))  
+    matrix=[]
+    for k in range(1,4):
+        for i in range(0,dim):
+            for j in range(0,dim):
+                u = unit_matrix(i,j,dim)
+                matrix.append(np.vectorize(ttm(tensor,u,k)))
     
-    mode1 = ttm(tensor, zeros, 1).reshape(-1)
-    mode2 = ttm(tensor, zeros, 2).reshape(-1)
-    mode3 = ttm(tensor, zeros, 3).reshape(-1)
-    
-    return np.hstack((mode1, mode2, mode3))
-
+    return matrix.T
 
 tensor =np.array([
     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -30,4 +35,17 @@ tensor =np.array([
     [[19, 20, 21], [22, 23, 24], [25, 26, 27]]
 ])
 
-print(find_derivative(tensor))
+def print_frontal_slices(tensor):
+    if len(tensor.shape) != 3:
+        raise ValueError("Input must be a 3D tensor.")
+    
+    num_slices = tensor.shape[2]  
+
+    for k in range(num_slices):
+        print(f"Frontal Slice {k + 1}:\n", tensor[:, :, k], "\n")
+
+tensor = np.moveaxis(np.array([[[1,2],[3,4]],[[2,1],[0,3]]]),0,-1)
+
+
+print_frontal_slices(ttm(tensor,unit_matrix(1,0,2),1))
+

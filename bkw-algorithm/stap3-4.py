@@ -6,9 +6,8 @@ def diagonalize_basis(basis):
     results = []
     
     for X_i in basis:
-        eigenvalues, eigenvectors = np.linalg.eig(X_i)        
-        diag_matrix = np.diag(eigenvalues) # probably niet nodig
-        results.append((diag_matrix, eigenvectors))
+        _,eigenvectors = np.linalg.eig(X_i)        
+        results.append(eigenvectors)
     
     return results
 
