@@ -3,16 +3,21 @@
 import numpy as np
 from scipy import linalg as la
 from math import sqrt
+from library import print_latex_matrix
+from scipy.linalg import null_space
+
 # Wanneer een singuliere waarde kleiner is dan 1*10^-5 keer de grootste singulier waarde, dan beschouwen we die als nul
 # TODO: bekijk het nut van de drempel
 def nulruimte(M, drempel=1e-5):
     dim = int(sqrt(len(M[0])//3))
-    _, s, Vh = la.svd(M)
-    tol = drempel * max(s) if s.size > 0 else 0
-    Vh_filtered = np.where(np.abs(Vh) < tol, 0, Vh)
-    expanded_basis=Vh_filtered.T
-    coefficients = np.random.randn(expanded_basis.shape[1])
-    random_vector = expanded_basis @ coefficients
+    #_, s, Vh = la.svd(M)
+    #tol = drempel * max(s) if s.size > 0 else 0
+    #Vh_filtered = np.where(np.abs(Vh) < tol, 0, Vh)
+    kernel=np.real(null_space(M))
+    coefficients = np.random.randn(kernel.shape[1])
+    random_vector = kernel @ coefficients
+    print_latex_matrix(np.round(kernel,2))
+    exit()
     #hard coded for now
     mat1 = random_vector[:dim**2].reshape(dim, dim)
     mat2 = random_vector[dim**2:2*(dim**2)].reshape(dim, dim)
