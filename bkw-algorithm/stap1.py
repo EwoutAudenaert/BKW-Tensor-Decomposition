@@ -44,8 +44,6 @@ def print_frontal_slices(tensor):
     for k in range(num_slices):
         print(f"Frontal Slice {k + 1}:\n", tensor[:, :, k], "\n")
 
-tensor = np.moveaxis(np.array([[[1,2],[3,4]],[[2,1],[0,3]]]),0,-1)
+tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
 
-
-print_frontal_slices(ttm(tensor,unit_matrix(1,0,2),1))
-
+print_frontal_slices(ttm(tensor,unit_matrix(0,0,2),1))
