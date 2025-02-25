@@ -2,6 +2,8 @@ from stap1 import find_derivative
 from stap2 import nulruimte
 import numpy as np
 from library import print_tensor
+import scipy.linalg as la
+
 """
 tensor =np.array([
     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -16,4 +18,5 @@ vecs =find_derivative(tensor)
 matrix = np.column_stack(vecs)
 basis = nulruimte(matrix)
 
-print_tensor(matrix)
+#null_space = la.null_space(matrix)
+#print(null_space)
