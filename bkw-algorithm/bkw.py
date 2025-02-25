@@ -14,14 +14,36 @@ tensor =np.array([
 """
 
 
-#tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-n=3;tensor = np.random.randn(3, 3, 3)
-vecs =find_derivative(tensor)
-matrix = np.column_stack(vecs)
-basis = nulruimte(matrix)
-permuted_factors = diagonalize_basis(basis) #A',B',C'
-ipf = [np.linalg.inv(x) for x in permuted_factors] #inverse permuted factor A'^-1,B'^-1,C'^-1
+def print_latex_matrix(matrix):
+    #matrix = matrix.astype(int)
+    rows = [" & ".join(map(str, row)) for row in matrix]
+    latex_matrix = "\\begin{bmatrix}\n" + " \\\\\n".join(rows) + "\n\\end{bmatrix}"
+    print(latex_matrix)
 
-#print(ttm(ttm(ttm(tensor,ipf[0],1),ipf[1],2),ipf[2],3))
+n=10
+#tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
+tensor = np.random.randn(n, n, n)
+
+vecs = find_derivative(tensor)
+matrix = np.column_stack(vecs)
+#print_latex_matrix_int(matrix)
+
+basis = nulruimte(matrix)
+#for b in basis:
+#    print_latex_matrix(b)
+permuted_factors = diagonalize_basis(basis) #A',B',C'
+[A,B,C] = [np.linalg.inv(x) for x in permuted_factors] #inverse permuted factor A'^-1,B'^-1,C'^-1
+image = np.einsum('ip,jq,kr,pqs -> iqs', A, B, C, tensor)
+
+
+def largest_modulus_coordinates_3d(tensor):
+    moduli = np.abs(tensor)
+    max_per_slice = np.max(moduli, axis=(0, 1))
+    coords = [list(zip(*np.where(moduli[:, :, k] == max_per_slice[k])))[:1] for k in range(tensor.shape[2])]
+    return [c[0] for c in coords]
+
+coords = largest_modulus_coordinates_3d(image)
+
+# print(ttm(ttm(ttm(tensor,ipf[0],1),ipf[1],2),ipf[2],3))
 #null_space = la.null_space(matrix)
 #print(null_space)

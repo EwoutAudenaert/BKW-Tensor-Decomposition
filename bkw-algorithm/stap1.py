@@ -24,7 +24,7 @@ def print_frontal_slices(tensor):
 def vectorize_tensor(tensor):
     frontal_slices = [tensor[:, :, k].flatten(order='F') for k in range(tensor.shape[0])]
     return np.concatenate(frontal_slices)
-
+ 
 def find_derivative(tensor):
     dim = tensor.shape[0] #cubic -> ok :)
     matrix=[]
