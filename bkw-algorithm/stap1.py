@@ -2,7 +2,7 @@ import numpy as np
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from library import ttm
+from library import ttm,unvectorize_tensor,vectorize_tensor
 
 # Stap 1 van het algoritme
 # We berekenen hier de afgeleide
@@ -21,11 +21,15 @@ def print_frontal_slices(tensor):
     for k in range(num_slices):
         print(f"Frontal Slice {k + 1}:\n", tensor[:, :, k], "\n")
 
+
+import numpy as np
+
+"""
 def vectorize_tensor(tensor):
     frontal_slices = [tensor[:, :, k].flatten(order='F') for k in range(tensor.shape[0])]
     return np.concatenate(frontal_slices)
 #.reshape(dim, dim)
-
+"""
 def find_derivative(tensor):
     dim = tensor.shape[0] #cubic -> ok :)
     matrix=[]
@@ -39,5 +43,3 @@ def find_derivative(tensor):
 
 
 tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-print_frontal_slices(tensor)
-print_frontal_slices(vectorize_tensor(tensor).reshape(2,2,2))
