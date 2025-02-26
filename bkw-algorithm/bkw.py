@@ -15,9 +15,10 @@ tensor =np.array([
 
 
 
-n=2
+
 
 tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
+n = len(tensor)
 #tensor = np.random.randn(n, n, n) # not of correct rank => generic should be rank R, using cpd
 vecs = find_derivative(tensor)
 matrix = np.column_stack(vecs)
@@ -41,7 +42,7 @@ def largest_modulus_coordinates_3d(tensor):
         coords.append((i, int(j), int(k)))  # Correct indexing
     return coords
 
-test_tensor = np.array([[[1,0],[0,0]],[[1,0],[0,0]]])
+#test_tensor = np.array([[[1,0],[0,0]],[[1,0],[0,0]]])
 
 #print(largest_modulus_coordinates_3d(test_tensor))
 coords = largest_modulus_coordinates_3d(sparse)
@@ -74,8 +75,13 @@ factors =[]
 for k in range(len(tensor)):
     factors.append(factor_tensor[k,k,k])
 
-print(factors)
+X = np.zeros((n, n, n))
+for i in range(n):
+    t = np.einsum('i,j,k->ijk', A[:, i], B[:, i], C[:, i])
+    X += tensor*(factors[i]**-1)
 
+print_tensor(tensor)
+print_tensor(X)
 
 
 exit()
