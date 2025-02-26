@@ -2,7 +2,7 @@ from stap1 import find_derivative
 from stap2 import nulruimte
 from stap3 import diagonalize_basis
 import numpy as np
-from library import print_tensor,ttm,print_matrix
+from library import print_tensor,ttm,print_matrix,print_frontal_slices
 import scipy.linalg as la
 
 """
@@ -15,42 +15,71 @@ tensor =np.array([
 
 
 
-n=4
-tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-#tensor = np.random.randn(n, n, n)
+n=2
 
+tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
+#tensor = np.random.randn(n, n, n) # not of correct rank => generic should be rank R, using cpd
 vecs = find_derivative(tensor)
 matrix = np.column_stack(vecs)
-#print_latex_matrix_int(matrix)
-
 basis = nulruimte(matrix)
 
-#for b in basis:
-#    print_latex_matrix(b)
-permuted_factors = diagonalize_basis(basis) #A',B',C'
-[A,B,C] = [np.linalg.inv(x) for x in permuted_factors] #inverse permuted factor A'^-1,B'^-1,C'^-1
 
-image = np.einsum('ip,jq,kr,pqs -> iqs', A, B, C, tensor)
-print_tensor(image)
-exit()
+permuted_factors = diagonalize_basis(basis) #A',B',C' 
+[Ap,Bp,Cp] = [np.linalg.inv(x) for x in permuted_factors] #inverse permuted factor A'^-1,B'^-1,C'^-1
+#Ap = A permuted
+sparse = ttm(ttm(ttm(tensor,Ap,1),Bp,2),Cp,3)
+#sparse = np.einsum('ip,jq,ks,pqs -> iqs', A, B, C, tensor)
+# need to mulitply matrix in each "slicing"
+
 
 def largest_modulus_coordinates_3d(tensor):
     moduli = np.abs(tensor)
     coords = []
     
     for i in range(tensor.shape[0]):
-        k, j = np.unravel_index(np.argmax(moduli[i, :, :]), moduli[i, :, :].shape)
-        coords.append(((i, int(j), int(k)),tensor[i][j][k]))
+        j, k = np.unravel_index(np.argmax(moduli[i, :, :]), moduli[i, :, :].shape)
+        coords.append((i, int(j), int(k)))  # Correct indexing
     return coords
 
-coords = largest_modulus_coordinates_3d(image)
+test_tensor = np.array([[[1,0],[0,0]],[[1,0],[0,0]]])
 
+#print(largest_modulus_coordinates_3d(test_tensor))
+coords = largest_modulus_coordinates_3d(sparse)
 
 m=len(tensor) ;perm = np.zeros((m, m, m))
 
 # Place ones at the specified coordinates
 for p, q, s in coords:
-    tensor[p, q, s] = 1
+    perm[p, q, s] = 1
+
+ones_vec = np.ones((1, n))
+[X1,X2,X3] = [np.squeeze(ttm(perm,ones_vec,i).T) for i in range(1,4)] #take ttm of all one vector, transpose matrix => orthogonal,
+#tree matrices reordering for each direction ttm vector tensor => matrix , tensor matrix -> tensor
+# noem deze X1,X2,X3
+
+A = Ap @ X2
+B = Bp @ X3
+C = Cp @ X1
+"""
+n=2
+I_tensor = np.zeros((n, n, n))
+for k in range(n):
+    I_tensor[k,k,k] = 1
+"""
+
+#tensor with factors on diagonal
+factor_tensor = ttm(ttm(ttm(sparse,X1,1),X2,2),X3,3)
+
+factors =[]
+for k in range(len(tensor)):
+    factors.append(factor_tensor[k,k,k])
+
+print(factors)
+
+
+
+exit()
+
 
 
 # print(ttm(ttm(ttm(tensor,ipf[0],1),ipf[1],2),ipf[2],3))

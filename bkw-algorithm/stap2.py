@@ -3,7 +3,7 @@
 import numpy as np
 from scipy import linalg as la
 from math import sqrt
-from library import print_latex_matrix,unvectorize_tensor
+from library import print_latex_matrix,unvectorize_tensor,print_matrix
 from scipy.linalg import null_space
 
 # Wanneer een singuliere waarde kleiner is dan 1*10^-5 keer de grootste singulier waarde, dan beschouwen we die als nul
@@ -14,8 +14,10 @@ def nulruimte(M, drempel=1e-5):
     #tol = drempel * max(s) if s.size > 0 else 0
     #Vh_filtered = np.where(np.abs(Vh) < tol, 0, Vh)
     kernel=np.real(null_space(M))
+
     coefficients = np.random.randn(kernel.shape[1])
     random_vector = kernel @ coefficients
+
     #hard coded for now
     mat1 = random_vector[:dim**2].reshape(dim, dim)
     mat2 = random_vector[dim**2:2*(dim**2)].reshape(dim, dim)

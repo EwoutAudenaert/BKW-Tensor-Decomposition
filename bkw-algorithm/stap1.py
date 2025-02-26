@@ -12,14 +12,6 @@ def unit_matrix(i, j, shape):
     M[i, j] = 1
     return M
 
-def print_frontal_slices(tensor):
-    if len(tensor.shape) != 3:
-        raise ValueError("Input must be a 3D tensor.")
-    
-    num_slices = tensor.shape[2]  
-
-    for k in range(num_slices):
-        print(f"Frontal Slice {k + 1}:\n", tensor[:, :, k], "\n")
 
 
 import numpy as np
