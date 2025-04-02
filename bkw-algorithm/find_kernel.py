@@ -3,12 +3,9 @@
 import numpy as np
 from scipy import linalg as la
 from math import sqrt
-from library import print_latex_matrix,unvectorize_tensor,print_matrix
 from scipy.linalg import null_space
 
-# Wanneer een singuliere waarde kleiner is dan 1*10^-5 keer de grootste singulier waarde, dan beschouwen we die als nul
-# TODO: bekijk het nut van de drempel
-def kernel(M, drempel=1e-5):
+def kernel(M):
     dim = int(sqrt(len(M[0])//3))
     kernel = null_space(M)
     coefficients = np.random.randn(kernel.shape[1])
