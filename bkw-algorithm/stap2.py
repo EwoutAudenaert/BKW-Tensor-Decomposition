@@ -13,7 +13,6 @@ def kernel(M, drempel=1e-5):
     kernel = null_space(M)
     coefficients = np.random.randn(kernel.shape[1])
     random_vector = kernel @ coefficients
-    #random_vector = kernel[:,1]    
     mat1 = random_vector[:dim**2].reshape(dim, dim)
     mat2 = random_vector[dim**2:2*(dim**2)].reshape(dim, dim)
     mat3 = random_vector[2*(dim**2):].reshape(dim, dim)

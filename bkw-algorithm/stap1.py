@@ -14,7 +14,6 @@ def unit_matrix(i, j, shape):
 
 
 
-import numpy as np
 
 """
 def vectorize_tensor(tensor):

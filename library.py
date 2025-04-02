@@ -2,7 +2,6 @@ import numpy as np
 def print_matrix(matrix):
     if isinstance(matrix, np.ndarray):
         matrix = matrix.tolist() 
-    rows = len(matrix)
     cols = len(matrix[0])
 
     print(" " + "_" * (cols * 2+1 ))
@@ -53,22 +52,54 @@ tensor =np.array([
 def plot_tensor():
     pass
 
-def ttm(X, Zeros, mode):
+def ttm(X, m, mode):
     match mode:
         case 1:
             X_mode = X.reshape(X.shape[0], -1)
-            Y = Zeros @ X_mode
-            return Y.reshape(Zeros.shape[0], X.shape[1], X.shape[2])
+            Y = m @ X_mode
+            return Y.reshape(m.shape[0], X.shape[1], X.shape[2])
 
         case 2:
             X_mode = X.transpose(1, 0, 2).reshape(X.shape[1], -1)
-            Y = Zeros @ X_mode
-            return Y.reshape(Zeros.shape[0], X.shape[0], X.shape[2]).transpose(1, 0, 2)
+            Y = m @ X_mode
+            return Y.reshape(m.shape[0], X.shape[0], X.shape[2]).transpose(1, 0, 2)
 
         case 3:
             X_mode = X.transpose(2, 0, 1).reshape(X.shape[2], -1)
-            Y = Zeros @ X_mode
-            return Y.reshape(Zeros.shape[0], X.shape[0], X.shape[1]).transpose(1, 2, 0)
+            Y = m @ X_mode
+            return Y.reshape(m.shape[0], X.shape[0], X.shape[1]).transpose(1, 2, 0)
+        
 
-        case _:
-            raise ValueError("Mode must be 1, 2, or 3.")
+def vectorize_tensor(tensor):
+    frontal_slices = [tensor[:, :, k].flatten(order='F') for k in range(tensor.shape[2])]
+    return np.concatenate(frontal_slices)
+
+def unvectorize_tensor(vector, shape):
+
+    dim = shape[0]  
+    tensor = np.zeros(shape)
+
+
+    for k in range(shape[2]):
+        tensor[:, :, k] = vector[k * dim**2 : (k + 1) * dim**2].reshape((dim, dim), order='F')
+    
+    return tensor
+def print_latex_matrix(matrix,giveInt=False):
+    if giveInt:
+        matrix = matrix.astype(int)
+    rows = [" & ".join(map(str, row)) for row in matrix]
+    latex_matrix = "\\begin{bmatrix}\n" + " \\\\\n".join(rows) + "\n\\end{bmatrix}"
+    print(latex_matrix)
+
+def print_frontal_slices(tensor):
+    if len(tensor.shape) != 3:
+        raise ValueError("Input must be a 3D tensor.")
+    
+    num_slices = tensor.shape[2]  
+
+    for k in range(num_slices):
+        print(f"Frontal Slice {k + 1}:\n", tensor[:, :, k], "\n")
+
+ttm_test_t = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
+ttm_test_m = np.array([[1,0],[0,0]])
+#print(ttm(ttm_test_t,ttm_test_m,2))
