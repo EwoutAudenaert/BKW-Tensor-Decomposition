@@ -9,6 +9,4 @@ def diagonalize_basis(basis, tol=1e-10):
         _,eigenvectors = np.linalg.eig(X_i)  
         #eigenvectors=np.real_if_close(eigenvectors, tol=tol) 
         results.append(inv(eigenvectors.T)*det(eigenvectors))
-        
-
     return results
