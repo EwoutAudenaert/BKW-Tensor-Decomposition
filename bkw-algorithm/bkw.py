@@ -2,11 +2,14 @@ from find_derivative import find_derivative
 from find_kernel import kernel
 from find_eigenvalues import diagonalize_basis
 import numpy as np
-from library import ttm,print_matrix,print_frontal_slices,print_latex_matrix
+from library import ttm,print_matrix,print_frontal_slices,round_matrix,helicoidal_tensor,matrix_to_wolfram_string
 import scipy.linalg as la
 from scipy.linalg import inv, det
 import matplotlib.pyplot as plt
 import numpy as np
+from sympy import Matrix, pprint
+from sympy.core.evalf import pure_complex
+from sympy.polys.rootoftools import CRootOf
 
 
 def largest_modulus_coordinates_3d(tensor):
@@ -18,11 +21,26 @@ def largest_modulus_coordinates_3d(tensor):
         coords.append((i, int(j), int(k)))  # Correct indexing
     return coords
 
+
 tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-def bkw_decompose(tensor):
+def bkw_decompose(tensor,approximate_decomposable=False):
     n = len(tensor)
-    derivative = np.array(find_derivative(tensor)).T #12 by 8 matrix
+    derivative = np.array(find_derivative(tensor)).T 
     basis = kernel(derivative)
+    if approximate_decomposable:
+        for k in range(len(basis)):
+            m=basis[k]
+            m = Matrix(round_matrix(m,6))
+            J, P = m.jordan_form()
+
+            J = np.array(J.tolist(), dtype=np.float64)
+            D = np.zeros((n,n))
+            for i in range(n):
+                D[i, i] = J[i, i]
+                #fix D it is fucked
+            P = np.array(P.tolist(), dtype=np.float64)
+            basis[k]=P @ (D @ inv(P))
+
     permuted_factors = diagonalize_basis(basis) #A',B',C'
     [Ap,Bp,Cp] =  permuted_factors
     sparse = ttm(ttm(ttm(tensor,Ap.T,1),Bp.T,2),Cp.T,3)
@@ -52,6 +70,10 @@ def bkw_recompose(factors,factor_matrices):
     [A,B,C] = factor_matrices
     return ttm(ttm(ttm(factor_tensor,inv(A).T,1),inv(B).T,2),inv(C).T,3)
 
-factors, matrices = bkw_decompose(tensor)
-print(bkw_recompose(factors, matrices))
 
+
+tensor = helicoidal_tensor(3)
+factors,matrices = bkw_decompose(tensor,True)
+for i in range(len(matrices)):
+    m = matrices[i]
+    print_matrix(m)

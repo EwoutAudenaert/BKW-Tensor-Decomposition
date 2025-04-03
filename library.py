@@ -20,17 +20,6 @@ assert array_depth([]) == 1
 assert array_depth([[1,2,3],[5,6,7]]) == 2
 assert array_depth([[[]]])==3
 
-def print_tensor(A,m_depth=None):
-    if m_depth is None:
-        m_depth = array_depth(A)
-    depth = array_depth(A)
-    if depth == 2:
-        return print_matrix(A)
-    for i in range(0,len(A)):
-        print("slice : " + "_ "*(depth-1) + str(i+1) + " _"*(m_depth -(depth)) )
-        print_tensor(A[i],m_depth)
-        print("\n")
-
 deep_tensor = np.array([[
     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
     [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
@@ -40,14 +29,17 @@ deep_tensor = np.array([[
     [[19, 20, 21], [22, 23, 24], [25, 26, 27]]]
 ])
 
-tensor =np.array([
+tensor1 =np.array([
+    [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+    [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+    [[19, 20, 21], [22, 23, 24], [25, 26, 27]]
+])
+tensor2 =np.array([
     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
     [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
     [[19, 20, 21], [22, 23, 24], [25, 26, 27]]
 ])
 
-
-#print_tensor(deep_tensor)
 
 def plot_tensor():
     pass
@@ -102,4 +94,48 @@ def print_frontal_slices(tensor):
 
 ttm_test_t = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
 ttm_test_m = np.array([[1,0],[0,0]])
-#print(ttm(ttm_test_t,ttm_test_m,2))
+
+
+def helicoidal_tensor(n):
+
+    # surface
+    u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(-2, 2, 100)
+    U, V = np.meshgrid(u, v)
+    X = np.sin(U) * V
+    Y = np.cos(U) * V
+    Z = U
+
+    # normalize coords
+    X_discrete = ((X - X.min()) / (X.max() - X.min()) * (n - 1)).astype(int)
+    Y_discrete = ((Y - Y.min()) / (Y.max() - Y.min()) * (n - 1)).astype(int)
+    Z_discrete = ((Z - Z.min()) / (Z.max() - Z.min()) * (n - 1)).astype(int)
+
+    tensor = np.zeros((n, n, n), dtype=float)
+
+    # set points for surface
+    for i in range(X_discrete.shape[0]):
+        for j in range(X_discrete.shape[1]):
+            x_idx, y_idx, z_idx = X_discrete[i, j], Y_discrete[i, j], Z_discrete[i, j]
+            tensor[x_idx, y_idx, z_idx] = 1  
+    return tensor
+
+def round_matrix(m,digits=3):
+    rounded = []
+    for row in m:
+        new_row = []
+        for val in row:
+            try:
+                num = float(val)
+                num = 0 if abs(num) < 1e-6 else round(num, digits)
+                new_row.append(num)
+            except:
+                new_row.append(val)
+        rounded.append(new_row)
+    return rounded
+
+def matrix_to_wolfram_string(m,digits=3):
+    return "{{" + "},{" .join(
+        ",".join(str(cell) for cell in row)
+        for row in round_matrix(m,digits)
+    ) + "}}"

@@ -3,12 +3,20 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import tensorly as tl
 from tensorly.decomposition import tucker
+from sympy import Matrix
+from library import print_matrix
+
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent / "bkw-algorithm"))
+from bkw import bkw_decompose, bkw_recompose
 
 # parameters
 SHOW_SURFACE = True
 ELEV = 30
 AZIM = 130
-grid_size = 50
+grid_size = 50 # fix the
+use_bkw=True
 
 # surface
 u = np.linspace(0, 2 * np.pi, 100)
@@ -17,9 +25,6 @@ U, V = np.meshgrid(u, v)
 X = np.sin(U) * V
 Y = np.cos(U) * V
 Z = U
-
-
-
 
 # normalize coords
 X_discrete = ((X - X.min()) / (X.max() - X.min()) * (grid_size - 1)).astype(int)
@@ -36,9 +41,18 @@ for i in range(X_discrete.shape[0]):
 
 # tucker
 rank = [10, 10, 10] 
-core, factors = tucker(tl.tensor(tensor), rank=rank)
-reconstructed_tensor = tl.tucker_to_tensor((core, factors))
+reconstructed_tensor = None
+if use_bkw:
+    factors,factor_matrices= bkw_decompose(tensor)
+    reconstructed_tensor =bkw_recompose(factors,factor_matrices)
 
+    for m in factor_matrices:
+        print_matrix(Matrix(m).jordan_form())
+else :
+    core, factors = tucker(tl.tensor(tensor), rank=rank)
+    reconstructed_tensor = tl.tucker_to_tensor((core, factors))
+    
+exit()
 
 fig = plt.figure(figsize=(12, 10))
 ax = fig.add_subplot(121, projection='3d')
