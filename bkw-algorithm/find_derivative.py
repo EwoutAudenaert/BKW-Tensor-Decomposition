@@ -8,18 +8,18 @@ from library import ttm,unvectorize_tensor,vectorize_tensor
 # We berekenen hier de afgeleide
 
 def unit_matrix(i, j, shape):
-    M = np.zeros((shape,shape))
-    M[i, j] = 1
-    return M
+    M = np.zeros((shape,shape)) # time n^2 ; space n^2
+    M[i, j] = 1 # time 1 ; space 1
+    return M # time 1 ; space 1
 
 def find_derivative(tensor):
-    dim = tensor.shape[0] #cubic -> ok :)
-    matrix=[]
-    for k in range(1,4):
-        for i in range(0,dim):
-            for j in range(0,dim):
-                u = unit_matrix(i,j,dim)
-                matrix.append(vectorize_tensor(ttm(tensor,u,k)).T)
+    dim = tensor.shape[0] # time 1 ; space 1
+    matrix=[] # time 1 ; space 1
+    for k in range(1,4): # time 1 ; space 1
+        for i in range(0,dim): # time n ; space 1
+            for j in range(0,dim): # time n ; space 1
+                u = unit_matrix(i,j,dim) # time n^2 ; space n^2
+                matrix.append(vectorize_tensor(ttm(tensor,u,k)).T) # time n^3 ; space n^3 --> because of ttm
     return matrix
 
 
