@@ -18,7 +18,7 @@ def find_derivative(tensor):
     for k in range(1,4): # time 1 ; space 1
         for i in range(0,dim): # time n ; space 1
             for j in range(0,dim): # time n ; space 1
-                u = unit_matrix(i,j,dim) # time n^2 ; space n^2
+                u = unit_matrix(i,j,dim) # time n^2 ; space 1
                 matrix.append(vectorize_tensor(ttm(tensor,u,k)).T) # time n^3 ; space n^3 --> because of ttm
     return matrix
 
