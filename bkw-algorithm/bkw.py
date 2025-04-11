@@ -23,28 +23,10 @@ def largest_modulus_coordinates_3d(tensor):
 
 
 tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-def bkw_decompose(tensor,approximate_decomposable=False):
+def bkw_decompose(tensor):
     n = len(tensor)
     derivative = np.array(find_derivative(tensor)).T 
     basis = kernel(derivative)
-    if approximate_decomposable:
-        for k in range(len(basis)):
-            m=basis[k]
-            m = Matrix(round_matrix(m,6))
-            
-            print(m)
-            print("jordan form :")
-            J, P = m.jordan_form()
-            print(J)
-            print("=================================")
-
-            J = np.array(J.tolist(), dtype=np.float64)
-            D = np.zeros((n,n))
-            for i in range(n):
-                D[i, i] = J[i, i]
-                #fix D it is fucked
-            P = np.array(P.tolist(), dtype=np.float64)
-            basis[k]=P @ (D @ inv(P))
 
     permuted_factors = diagonalize_basis(basis) #A',B',C'
     [Ap,Bp,Cp] =  permuted_factors
@@ -78,5 +60,5 @@ def bkw_recompose(factors,factor_matrices):
 
 
 tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-factors,matrices = bkw_decompose(tensor,False)
+factors,matrices = bkw_decompose(tensor)
 

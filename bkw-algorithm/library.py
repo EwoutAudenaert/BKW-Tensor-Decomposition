@@ -47,9 +47,9 @@ def plot_tensor():
 def ttm(X, m, mode):
     match mode:
         case 1:
-            X_mode = X.reshape(X.shape[0], -1)
-            Y = m @ X_mode
-            return Y.reshape(m.shape[0], X.shape[1], X.shape[2])
+            X_mode = X.reshape(X.shape[0], -1) # time 1 ; space 1
+            Y = m @ X_mode # time n^3 ; space n^2
+            return Y.reshape(m.shape[0], X.shape[1], X.shape[2]) # time 1 ; space n^3
 
         case 2:
             X_mode = X.transpose(1, 0, 2).reshape(X.shape[1], -1)
