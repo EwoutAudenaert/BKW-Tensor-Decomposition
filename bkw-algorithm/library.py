@@ -19,7 +19,7 @@ def array_depth(arr):
 assert array_depth([]) == 1
 assert array_depth([[1,2,3],[5,6,7]]) == 2
 assert array_depth([[[]]])==3
-
+small_tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
 deep_tensor = np.array([[
     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
     [[10, 11, 12], [13, 14, 15], [16, 17, 18]],

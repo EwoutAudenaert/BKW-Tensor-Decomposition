@@ -1,0 +1,66 @@
+you can start by taking the tensor S in
+1) T = (A,B,C) * S with S being the core in tucker decompositoin
+2) bkw on the core => decompose S chiseling should be used
+3) then restore eT by just take T = (A,B,C) * S 
+T -> dT 
+|     |
+S -> dS
+
+tensor rank decomposition smallest possible number
+not the same chiseling algorithm
+
+chiseling: 
+1) taking the derivative  and the kernel of derivative  #this is chiseling characteristic step  or dleto-algorithm
+kernel will be larger. reshape it into the number of matrices. 
+size of derivative map is of size : 
+for example for a 4 x 5 x 10. you will get X = 4 x4 and Y = 5x 5 and Z = 10x10
+
+2) diagonalize X,Y,Z and work with the eigenvalues to get the scaling (eigenvectors are more for decomposition but also needed)
+
+3) multiple options 
+
+For CPD: 
+tensor rank decomposition if decompostion needs to ber minimal
+Condition :
+1) cubic
+2) the rank of the tensor should be the same as the length in each direction
+tensor rank != multi-liniear   rank
+tensor rank is the number of vectors you need in your decompostion how many terms you need to sum.
+
+each eigenvalue is a term  of the form 
+for the eigenvectors lambda_1 (v_1 tensorproduct v_2 tensorproduct v_3) 
+bkw doesnt look at the eigenvalues explicitly 
+if you get rid of the vectors bkw finds the factor
+--check diagonal of factor tensor and compare to eigenvalues or of by constant scaling
+
+Tucker : 
+anything you can send to zero will be send to zero.
+compute the eigenvalues and just throw away all zero eigenvalues and the corresponding eigenvectors
+
+Stratification : 
+(use tucker as preprocessing)
+output are the order of tensor number of matrices to use to get the Stratification by taking the ttm along each axis
+note this will be 3 in our case 
+the end goal is to get from a tensor T an  stratified tensor C. (A^-1,B^-1,C^-1) * T = C 
+a chisel is a generalization that encodes the information in its kernel how to take the derrivative map 
+think of the chisel as a derrivative map
+1) get element from the kernel 
+2) take Jordan decomposition. Split in nilpotent and diagonalizable part
+X = P J P^-1
+
+| x1     |
+| 1 x2   |
+|     x3 |
+
+diagonalizable part is the diagonal matrix just the eigen values call this S
+the nilpotent part is J minus the diagonalizable minus the diagonal call this N 
+
+thus X  = P(S+N)P^-1
+=PSP^-1 + PNP^-1
+
+3) if S is a scalar matrix report (scaled unity matrix)
+4) get eigenvector for S this is P and throw away PNP^-1
+A^-1= P^-1 same for B and C  this is what you want to return
+
+
+David conjecture : You could think of bkw algorithm as a special case of the stratification where you put it on the diagona

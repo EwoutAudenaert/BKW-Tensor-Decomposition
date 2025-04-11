@@ -31,7 +31,12 @@ def bkw_decompose(tensor,approximate_decomposable=False):
         for k in range(len(basis)):
             m=basis[k]
             m = Matrix(round_matrix(m,6))
+            
+            print(m)
+            print("jordan form :")
             J, P = m.jordan_form()
+            print(J)
+            print("=================================")
 
             J = np.array(J.tolist(), dtype=np.float64)
             D = np.zeros((n,n))
@@ -72,8 +77,6 @@ def bkw_recompose(factors,factor_matrices):
 
 
 
-tensor = helicoidal_tensor(3)
-factors,matrices = bkw_decompose(tensor,True)
-for i in range(len(matrices)):
-    m = matrices[i]
-    print_matrix(m)
+tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
+factors,matrices = bkw_decompose(tensor,False)
+
