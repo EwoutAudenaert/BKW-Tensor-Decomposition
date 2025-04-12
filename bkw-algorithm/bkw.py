@@ -51,7 +51,7 @@ def bkw_decompose(tensor):
     return factors,[A,B,C]
 def bkw_recompose(factors,factor_matrices):
     n=len(factor_matrices[0])
-    factor_tensor = np.zeros((n,n,n))
+    factor_tensor = np.zeros((n,n,n), dtype=complex)
     for i in range(n):
         factor_tensor[i,i,i]=factors[i]
     [A,B,C] = factor_matrices
@@ -60,5 +60,8 @@ def bkw_recompose(factors,factor_matrices):
 
 
 tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
+
+
 factors,matrices = bkw_decompose(tensor)
 
+print_frontal_slices(bkw_recompose(factors,matrices))
