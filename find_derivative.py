@@ -2,7 +2,7 @@ import numpy as np
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from library import ttm,unvectorize_tensor,vectorize_tensor
+from library import ttm,vectorize_tensor
 
 # Stap 1 van het algoritme
 # We berekenen hier de afgeleide

@@ -1,15 +1,15 @@
-from find_derivative import find_derivative
-from find_kernel import kernel
 from find_eigenvalues import diagonalize_basis
 import numpy as np
-from library import ttm,print_matrix,print_frontal_slices,round_matrix,helicoidal_tensor,matrix_to_wolfram_string
-import scipy.linalg as la
-from scipy.linalg import inv, det
-import matplotlib.pyplot as plt
+from scipy.linalg import inv
 import numpy as np
-from sympy import Matrix, pprint
-from sympy.core.evalf import pure_complex
-from sympy.polys.rootoftools import CRootOf
+
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from find_derivative import find_derivative
+from find_kernel import kernel
+from library import ttm,print_frontal_slices
 
 
 def largest_modulus_coordinates_3d(tensor):
