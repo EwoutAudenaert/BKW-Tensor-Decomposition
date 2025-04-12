@@ -22,7 +22,6 @@ def largest_modulus_coordinates_3d(tensor):
     return coords
 
 
-tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
 def bkw_decompose(tensor):
     n = len(tensor)
     derivative = np.array(find_derivative(tensor)).T # Time: O(n^3)
