@@ -13,7 +13,7 @@ from sympy.polys.rootoftools import CRootOf
 
 
 def largest_modulus_coordinates_3d(tensor):
-    moduli = np.abs(tensor)
+    moduli = np.abs(tensor) # lineair --> O(n^3) I guess
     coords = []
     
     for i in range(tensor.shape[0]):
@@ -25,13 +25,13 @@ def largest_modulus_coordinates_3d(tensor):
 tensor = np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
 def bkw_decompose(tensor):
     n = len(tensor)
-    derivative = np.array(find_derivative(tensor)).T 
-    basis = kernel(derivative)
+    derivative = np.array(find_derivative(tensor)).T # Time: O(n^3)
+    basis = kernel(derivative) # Time: O(n^7)
 
-    permuted_factors = diagonalize_basis(basis) #A',B',C'
+    permuted_factors = diagonalize_basis(basis) #A',B',C' # Time: O(n^3)
     [Ap,Bp,Cp] =  permuted_factors
-    sparse = ttm(ttm(ttm(tensor,Ap.T,1),Bp.T,2),Cp.T,3)
-    non_zero_coords = largest_modulus_coordinates_3d(sparse)
+    sparse = ttm(ttm(ttm(tensor,Ap.T,1),Bp.T,2),Cp.T,3) # Time: O(n^3)
+    non_zero_coords = largest_modulus_coordinates_3d(sparse) 
 
     permutation_tensor = np.zeros((n, n, n))
     # Place ones at the specified coordinates
