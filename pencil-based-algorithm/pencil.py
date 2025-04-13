@@ -21,7 +21,7 @@ def pencil_decompose(tensor):
     for i in range(n):
         C.append(Ctensor[i,i,:])
     #we need to transpose because np puts the row into the columns
-    C = np.array(C).T
+    C = np.array(C).T.conj()
     return [A,B,C]
 
 
