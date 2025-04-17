@@ -12,7 +12,7 @@ not the same chiseling algorithm
 chiseling: 
 1) taking the derivative  and the kernel of derivative  #this is chiseling characteristic step  or dleto-algorithm
 kernel will be larger. reshape it into the number of matrices. 
-size of derivative map is of size : 
+size of derivative map is of size : dleto-
 for example for a 4 x 5 x 10. you will get X = 4 x4 and Y = 5x 5 and Z = 10x10
 
 2) diagonalize X,Y,Z and work with the eigenvalues to get the scaling (eigenvectors are more for decomposition but also needed)

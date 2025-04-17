@@ -10,8 +10,8 @@ from scipy.linalg import inv
 import tensorly as tl
 from tensorly.decomposition import tucker
 
-tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-tensor = helicoidal_tensor(10)
+#tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
+tensor = helicoidal_tensor(20)
 
 
 def generate_invertible_matrices(n, count=3):
@@ -21,14 +21,25 @@ def generate_invertible_matrices(n, count=3):
         if np.linalg.cond(A) < 1 / np.finfo(A.dtype).eps: 
             matrices.append(A)
     return matrices
-[X,Y,Z] = generate_invertible_matrices(10,3)
-scrambled_tensor = ttm(tensor,X,1)
 
+[X,Y,Z] = generate_invertible_matrices(20,3)
+scrambled_tensor = ttm(tensor,X,1) #todo add new ttms
 
-core, factors = tucker(scrambled_tensor,rank=10) 
+#some tucker ask rank to get a threshold for the singular value threshold
+# and that threshold is related in the rank, the multilineair rank is related to the number of singular value of the tensor
+#same as singular values in matrix rank is number of positive singular values
+# change take the first 20 just replace by below this threshold
+#make own tucker. not dleto!!!!!
+#this does not work because it will always keep the whole kernel
+core, factors = tucker(scrambled_tensor,rank=20) 
+
+#have a look at of BKW heuristic version instead
+# trivial solution dimension is 2 => hardcode step 1. If you have the derivative map and 
+# X, Y,Z are all scalars then  x+y+z = 0 => 2 degrees of freedom
 
 derivative = np.array(find_derivative(core)).T # Time: O(n^3)
 basis = kernel(derivative) # Time: O(n^7)
+
 def is_scaled_identity_matrix(A):
     if A.shape[0] != A.shape[1]:
         return False    
@@ -40,14 +51,12 @@ def is_scaled_identity_matrix(A):
 result =[]
 for m in basis:
     m_sym = Matrix(m.round(decimals=1)).applyfunc(lambda x: nsimplify(x, rational=True))
-    print(m_sym)
 
     P, J = Matrix(m_sym).jordan_form()
     P = np.array(P.evalf(), dtype=np.complex128)
     J = np.array(J.evalf(), dtype=np.complex128)
 
     A_diag = np.diag(np.diag(J))
-    print("hey")
     if is_scaled_identity_matrix(A_diag):
         print("The tensor is already stratified.")
         exit()
@@ -55,6 +64,7 @@ for m in basis:
 
 [A,B,C]  = result
 stratified_core = ttm(ttm(ttm(tensor,A,1),B,2),C,3)
+# factor matrices ttm1 ttm2 ttm3 with the transposed matrices
 reconstructed_tensor = tl.tucker_to_tensor((stratified_core, factors))
 
 print_frontal_slices(reconstructed_tensor)
@@ -70,7 +80,7 @@ from tensorly.decomposition import tucker
 SHOW_SURFACE = True
 ELEV = 30
 AZIM = 130
-grid_size = 10
+grid_size = 20
 
 u = np.linspace(0, 2 * np.pi, 100)
 v = np.linspace(-2, 2, 100)

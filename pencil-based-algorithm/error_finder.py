@@ -15,14 +15,8 @@ for i, c in enumerate(c_vals):
         f1 = [[a, b], [-b, a]]
         f2 = [[c, d], [-d, c]]
         tensor = np.stack([f1, f2], axis=2).astype(complex)
-
-        
-        
         re_tensor = pencil_recompose(pencil_decompose(tensor))
         err = np.linalg.norm(tensor - re_tensor)  
-        
-
-
         errors[j, i] = err
 
 delta_ac, delta_bd = np.meshgrid(c_vals - a, d_vals - b)

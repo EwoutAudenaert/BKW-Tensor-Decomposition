@@ -57,10 +57,6 @@ def bkw_recompose(factors,factor_matrices):
     return ttm(ttm(ttm(factor_tensor,inv(A).T,1),inv(B).T,2),inv(C).T,3)
 
 
-
-tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-
-
-factors,matrices = bkw_decompose(tensor)
-
-print_frontal_slices(bkw_recompose(factors,matrices))
+#tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
+#factors,matrices = bkw_decompose(tensor)
+#print_frontal_slices(bkw_recompose(factors,matrices))
