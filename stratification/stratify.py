@@ -1,19 +1,28 @@
 import numpy as np
 import sys
 import os
+import tensorly as tl
+
 from sympy import Matrix, nsimplify
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from library import ttm,print_frontal_slices,print_matrix,helicoidal_tensor
+from library import ttm,print_frontal_slices,print_matrix,helicoidal_tensor,matrix_heatmap
 from find_derivative import find_derivative
 from find_kernel import kernel
-from scipy.linalg import inv
-import tensorly as tl
-from tensorly.decomposition import tucker
-
+from scipy.linalg import inv,det
+#from tucker import tucker
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 #tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-tensor = helicoidal_tensor(20)
+zn=10
+tensor = helicoidal_tensor(n)
 
+core,factors = tucker(tensor)
+#print([f.shape for f in factors])
+factors = [f.T  for f in factors]
+reconstructed_tensor = tl.tucker_tensor.tucker_to_tensor((core, factors[::-1]))
 
+matrix_heatmap(reconstructed_tensor[:,:,5])
+exit()
 def generate_invertible_matrices(n, count=3):
     matrices = []
     while len(matrices) < count:
@@ -22,8 +31,8 @@ def generate_invertible_matrices(n, count=3):
             matrices.append(A)
     return matrices
 
-[X,Y,Z] = generate_invertible_matrices(20,3)
-scrambled_tensor = ttm(tensor,X,1) #todo add new ttms
+[X,Y,Z] = generate_invertible_matrices(n,3)
+scrambled_tensor = ttm(ttm(ttm(tensor,X,1),Y,2),Z,3) #todo add new ttms
 
 #some tucker ask rank to get a threshold for the singular value threshold
 # and that threshold is related in the rank, the multilineair rank is related to the number of singular value of the tensor
@@ -31,7 +40,7 @@ scrambled_tensor = ttm(tensor,X,1) #todo add new ttms
 # change take the first 20 just replace by below this threshold
 #make own tucker. not dleto!!!!!
 #this does not work because it will always keep the whole kernel
-core, factors = tucker(scrambled_tensor,rank=20) 
+core, factors = tucker(scrambled_tensor) 
 
 #have a look at of BKW heuristic version instead
 # trivial solution dimension is 2 => hardcode step 1. If you have the derivative map and 
@@ -57,30 +66,28 @@ for m in basis:
     J = np.array(J.evalf(), dtype=np.complex128)
 
     A_diag = np.diag(np.diag(J))
-    if is_scaled_identity_matrix(A_diag):
-        print("The tensor is already stratified.")
-        exit()
+    
     result.append(inv(P))
 
 [A,B,C]  = result
 stratified_core = ttm(ttm(ttm(tensor,A,1),B,2),C,3)
 # factor matrices ttm1 ttm2 ttm3 with the transposed matrices
-reconstructed_tensor = tl.tucker_to_tensor((stratified_core, factors))
+#reconstructed_tensor = tucker_recompose(stratified_core, factors)
+reconstructed_tensor = tl.tucker_tensor.tucker_to_tensor((core, factors[::-1]))
 
-print_frontal_slices(reconstructed_tensor)
+def round_below_threshold_to_zero(tensor, threshold):
+    tensor[tensor < threshold] = 0
+    return tensor
+print_matrix(tensor[:,:,5])
+reconstructed_tensor= round_below_threshold_to_zero(reconstructed_tensor,1)
 
-reconstructed_tensor= reconstructed_tensor
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import tensorly as tl
-from tensorly.decomposition import tucker
+
 
 # parameters
 SHOW_SURFACE = True
 ELEV = 30
 AZIM = 130
-grid_size = 20
+grid_size = n
 
 u = np.linspace(0, 2 * np.pi, 100)
 v = np.linspace(-2, 2, 100)

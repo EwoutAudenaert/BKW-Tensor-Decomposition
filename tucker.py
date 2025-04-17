@@ -1,5 +1,5 @@
 import numpy as np
-
+from library import ttm
 def unfold(X, mode) :
     size_X = X.shape
     n_dims = X.ndim
@@ -19,7 +19,7 @@ def mlp(X, factors):
         X = np.tensordot(U, X, axes=(1, mode))
     return X
 
-def tucker(X):
+def tucker(X,threshold=1e-10):
     n_dims = X.ndim
     factors = [None] * n_dims
 
@@ -29,7 +29,8 @@ def tucker(X):
 
         i = 0
         try:
-            while S[i] > 1e-10:
+            threshold=1
+            while S[i] > threshold:
                 i += 1
         except IndexError:
             pass
@@ -37,3 +38,5 @@ def tucker(X):
         factors[n] = U[:, :i].T 
     core = mlp(X, factors)
     return core, factors
+
+

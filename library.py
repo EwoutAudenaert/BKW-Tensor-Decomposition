@@ -1,4 +1,12 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
+def matrix_heatmap(matrix):
+    plt.imshow(matrix, cmap='hot', interpolation='nearest')
+    plt.colorbar() 
+    plt.show()
+
+
 def print_matrix(matrix):
     if isinstance(matrix, np.ndarray):
         matrix = matrix.tolist() 
