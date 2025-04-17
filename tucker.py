@@ -19,13 +19,13 @@ def mlp(X, factors):
         X = np.tensordot(U, X, axes=(1, mode))
     return X
 
-def tucker(X: np.ndarray):
+def tucker(X):
     n_dims = X.ndim
     factors = [None] * n_dims
 
     for n in range(n_dims):
         X_n = unfold(X, n)
-        U, S, Vh = np.linalg.svd(X_n, full_matrices=False)
+        U, S, _ = np.linalg.svd(X_n, full_matrices=False)
 
         i = 0
         try:
