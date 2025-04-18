@@ -59,7 +59,7 @@ def close_eigs_tensor(n,a,start=0.1,end=1):
 reps=10
 errs = []
 start =3
-end=10
+end=20
 recompose = lambda a,b,c: np.einsum('i,j,k->ijk', a, b, c)
 
 for n in range(start,end):
@@ -67,7 +67,7 @@ for n in range(start,end):
     for rep in range(0,reps):
         factor_matrices = [random_orthogonal(n) for _ in range(0,3)]
 
-        tensor = bkw_recompose([1 for i in range(n)],factor_matrices)
+        tensor = bkw_recompose([1 + (10**-i) for i in range(n)],factor_matrices)
         _, re_factor_matrices = bkw_decompose(tensor)
         #tensor = pencil_recompose(factor_matrices)
         #re_factor_matrices = pencil_decompose(tensor)
@@ -92,15 +92,9 @@ for n in range(start,end):
             #print_frontal_slices(abs(recompose(a,b,c)))
             #print_frontal_slices(abs(recompose(a_,b_,c_)))
         
-            err += np.sqrt(np.sum((abs(recompose(a,b,c)) - (recompose(a_,b_,c_)))**2))
-            print(np.sqrt(np.sum(np.abs(recompose(a,b,c) - recompose(a_,b_,c_)) ** 2)))
-            print_matrix(recompose(a_,b_,c_)[:,:,0])
-            print_matrix(recompose(a,b,c)[:,:,0])
-            
-            #print(np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_))**2)))
-            exit()
+            err += np.sqrt(np.sum(np.abs(recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
         #print(err)
-        #acc_err+=err
+        acc_err+=err
 
         #print_frontal_slices(tensor-pencil_recompose(factor_matrices))
         #acc_err += np.sqrt(np.sum((tensor - bkw_recompose([1 for i in range(n)],factor_matrices))**2))
@@ -108,7 +102,6 @@ for n in range(start,end):
 
 dims = np.arange(start, end)
 r = errs 
-exit()
 sns.set(style="whitegrid")
 sns.lineplot(x=dims, y=r, marker="o", label="Observed")
 plt.xlabel("Dimensions")
