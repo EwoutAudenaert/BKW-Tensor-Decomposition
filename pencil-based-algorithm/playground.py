@@ -56,10 +56,10 @@ def close_eigs_tensor(n,a,start=0.1,end=1):
         tensor[:, :, k] = random_orthogonal(n)
     return tensor
 
-reps=10
+reps=1000
 errs = []
 start =3
-end=20
+end=10
 recompose = lambda a,b,c: np.einsum('i,j,k->ijk', a, b, c)
 
 for n in range(start,end):
@@ -67,10 +67,10 @@ for n in range(start,end):
     for rep in range(0,reps):
         factor_matrices = [random_orthogonal(n) for _ in range(0,3)]
 
-        tensor = bkw_recompose([1 + (10**-i) for i in range(n)],factor_matrices)
-        _, re_factor_matrices = bkw_decompose(tensor)
-        #tensor = pencil_recompose(factor_matrices)
-        #re_factor_matrices = pencil_decompose(tensor)
+        #tensor = bkw_recompose([1 + i*(10**-12) for i in range(n)],factor_matrices) remove transpose if this needs to work
+        #_, re_factor_matrices = bkw_decompose(tensor)
+        tensor = pencil_recompose(factor_matrices)
+        re_factor_matrices = pencil_decompose(tensor) 
 
         scaled_permutations = [np.linalg.solve(U, D) for U, D in zip(re_factor_matrices, factor_matrices)]
         permutations =[]
@@ -79,12 +79,12 @@ for n in range(start,end):
             perm = np.zeros((n,n))
             for i, j in coords:
                 perm[i, j] = scaled_perm[i,j]
-            permutations.append(perm*det(perm))
-        permutations = scaled_permutations
+            permutations.append(perm.T)
+        #permutations = scaled_permutations
 
 
         err =0
-        re_factor_matrices = [ M @ P   for M,P in zip(re_factor_matrices,permutations)]  
+        re_factor_matrices = [ M @ P  for M,P in zip(re_factor_matrices,permutations)]  
         for i in range(n):
             a,b,c = [x[:,i] for x in factor_matrices]
             a_,b_,c_ = [x[:,i] for x in re_factor_matrices]
