@@ -1,14 +1,18 @@
 import numpy as np
-from numpy.linalg import inv
+from numpy.linalg import inv,det
 
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from library import print_matrix,print_frontal_slices
+from library import print_matrix,print_frontal_slices,largest_modulus_coordinates_2d
 from pencil import pencil_decompose,pencil_recompose
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../bkw-algorithm')))
 from bkw import bkw_recompose, bkw_decompose
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
 
 def nearly_identical_orthogonal_tensor(n,eps=1e-6):
     Q1, _ = np.linalg.qr(np.random.randn(n, n))
@@ -25,74 +29,90 @@ def nearly_identical_orthogonal_tensor(n,eps=1e-6):
         tensor[:, :, k] = np.eye(n)  
     return tensor
 
-import numpy as np
 
 
 
-#tensor = nearly_identical_orthogonal_tensor(3) #np.array([[[1,2],[2,1]],[[3,0],[4,3]]],dtype=complex)
-#re_tensor = pencil_recompose(pencil_decompose(tensor))
-#print_frontal_slices(tensor)
-#print_frontal_slices(re_tensor)
+def random_orthogonal(n):
+    H = np.random.randn(n, n)
+    Q, _ = np.linalg.qr(H)
+    return Q
+def close_eigs_matrices(n, a,start,end):
+    Q1 = random_orthogonal(n)
+    Q2 = random_orthogonal(n)
+    eigvals1 = np.linspace(start, end, n)
+    eigvals2 = eigvals1 + a 
+    D1 = np.diag(eigvals1)
+    D2 = np.diag(eigvals2)
+    A1 = Q1 @ D1 @ Q1.T
+    A2 = Q1 @ D2 @ Q1.T
+    return A1, A2
 
+def close_eigs_tensor(n,a,start=0.1,end=1):
+    T1,T2 = close_eigs_matrices(n,a,start,end)
+    tensor = np.zeros((n, n, n))
+    tensor[:, :, 0] = T1
+    tensor[:, :, 1] = T2
+    for k in range(2, n):
+        tensor[:, :, k] = random_orthogonal(n)
+    return tensor
 
-
-"""
-reps=100
+reps=10
 errs = []
 start =3
-end =6
+end=10
+recompose = lambda a,b,c: np.einsum('i,j,k->ijk', a, b, c)
+
 for n in range(start,end):
     acc_err = 0
     for rep in range(0,reps):
-        #tensor = nearly_identical_orthogonal_tensor(n)
-        #tensor  = np.random.rand(*(n,n,n))
-        tensor = close_eigs_tensor(n,10**-12)
-        re_tensor = pencil_recompose(pencil_decompose(tensor))   
+        factor_matrices = [random_orthogonal(n) for _ in range(0,3)]
+
+        tensor = bkw_recompose([1 for i in range(n)],factor_matrices)
+        _, re_factor_matrices = bkw_decompose(tensor)
+        #tensor = pencil_recompose(factor_matrices)
+        #re_factor_matrices = pencil_decompose(tensor)
+
+        scaled_permutations = [np.linalg.solve(U, D) for U, D in zip(re_factor_matrices, factor_matrices)]
+        permutations =[]
+        for scaled_perm in scaled_permutations:
+            coords = largest_modulus_coordinates_2d(scaled_perm)
+            perm = np.zeros((n,n))
+            for i, j in coords:
+                perm[i, j] = scaled_perm[i,j]
+            permutations.append(perm*det(perm))
+        permutations = scaled_permutations
+
+
+        err =0
+        re_factor_matrices = [ M @ P   for M,P in zip(re_factor_matrices,permutations)]  
+        for i in range(n):
+            a,b,c = [x[:,i] for x in factor_matrices]
+            a_,b_,c_ = [x[:,i] for x in re_factor_matrices]
+            #print("=========================")
+            #print_frontal_slices(abs(recompose(a,b,c)))
+            #print_frontal_slices(abs(recompose(a_,b_,c_)))
         
-        err  = np.sqrt(np.sum(np.abs(tensor - re_tensor)**2))#frobenius norm
-        #err = np.max(np.abs(tensor - re_tensor))
-        acc_err+=err
+            err += np.sqrt(np.sum((abs(recompose(a,b,c)) - (recompose(a_,b_,c_)))**2))
+            print(np.sqrt(np.sum(np.abs(recompose(a,b,c) - recompose(a_,b_,c_)) ** 2)))
+            print_matrix(recompose(a_,b_,c_)[:,:,0])
+            print_matrix(recompose(a,b,c)[:,:,0])
+            
+            #print(np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_))**2)))
+            exit()
+        #print(err)
+        #acc_err+=err
+
+        #print_frontal_slices(tensor-pencil_recompose(factor_matrices))
+        #acc_err += np.sqrt(np.sum((tensor - bkw_recompose([1 for i in range(n)],factor_matrices))**2))
     errs.append(acc_err/reps)
-"""
 
-reps = 100
-errs = []
-c = 0.5  # fixed parameter
-start =1
-end =13
-a_values = np.logspace(1, 12, num=12)  # decreasing a from 1e-1 to 1e-12
-for a in a_values:
-    T1 = np.array([[1, c], [-c, 1]])
-    T2 = np.array([[1, c - a], [-(c - a), 1]])
-    tensor = np.zeros((2, 2, 2))
-    tensor[:, :, 0] = T1
-    tensor[:, :, 1] = T2
-
-    re_tensor = pencil_recompose(pencil_decompose(tensor))
-    err = np.linalg.norm(tensor - re_tensor)  # Frobenius norm
-    print("=============================================================")
-    print_frontal_slices(tensor)
-    print_frontal_slices(re_tensor)
-    print_frontal_slices(tensor-re_tensor)
-
-    errs.append(err )
-
-print(errs)
-exit()
-#check error 1/sqrt(n)
-import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
-
-r = errs
-
-# X-axis: dimensions from 2 to 7
 dims = np.arange(start, end)
-
-# Create plot
+r = errs 
+exit()
 sns.set(style="whitegrid")
-sns.lineplot(x=dims, y=r, marker="o")
+sns.lineplot(x=dims, y=r, marker="o", label="Observed")
 plt.xlabel("Dimensions")
 plt.ylabel("Error")
 plt.title("Decomposition Error vs Dimensions")
+plt.legend()
 plt.show()

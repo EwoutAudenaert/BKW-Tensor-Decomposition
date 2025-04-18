@@ -6,6 +6,22 @@ def matrix_heatmap(matrix):
     plt.colorbar() 
     plt.show()
 
+def largest_modulus_coordinates_2d(matrix):
+    moduli = np.abs(matrix)
+    coords = []
+    for i in range(matrix.shape[0]):
+        j = np.argmax(moduli[i, :])
+        coords.append((i, int(j)))
+    return coords
+
+def largest_modulus_coordinates_3d(tensor):
+    moduli = np.abs(tensor) # lineair --> O(n^3) I guess
+    coords = []
+    
+    for i in range(tensor.shape[0]):
+        j, k = np.unravel_index(np.argmax(moduli[i, :, :]), moduli[i, :, :].shape)
+        coords.append((i, int(j), int(k)))  # Correct indexing
+    return coords
 
 def print_matrix(matrix):
     if isinstance(matrix, np.ndarray):

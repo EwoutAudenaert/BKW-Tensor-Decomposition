@@ -59,8 +59,10 @@ def is_scaled_identity_matrix(A):
 
 result =[]
 for m in basis:
+    #eigenvalues instead
+    
     m_sym = Matrix(m.round(decimals=1)).applyfunc(lambda x: nsimplify(x, rational=True))
-
+    
     P, J = Matrix(m_sym).jordan_form()
     P = np.array(P.evalf(), dtype=np.complex128)
     J = np.array(J.evalf(), dtype=np.complex128)

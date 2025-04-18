@@ -9,17 +9,10 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from find_derivative import find_derivative
 from find_kernel import kernel
-from library import ttm,print_frontal_slices
+from library import ttm,print_frontal_slices,largest_modulus_coordinates_3d
 
 
-def largest_modulus_coordinates_3d(tensor):
-    moduli = np.abs(tensor) # lineair --> O(n^3) I guess
-    coords = []
-    
-    for i in range(tensor.shape[0]):
-        j, k = np.unravel_index(np.argmax(moduli[i, :, :]), moduli[i, :, :].shape)
-        coords.append((i, int(j), int(k)))  # Correct indexing
-    return coords
+
 
 
 def bkw_decompose(tensor):
@@ -57,6 +50,6 @@ def bkw_recompose(factors,factor_matrices):
     return ttm(ttm(ttm(factor_tensor,inv(A).T,1),inv(B).T,2),inv(C).T,3)
 
 
-tensor =  np.array([[[1,2],[2,1]],[[3j,0],[4j,3]]])
-factors,matrices = bkw_decompose(tensor)
-print_frontal_slices(bkw_recompose(factors,matrices))
+#tensor =  np.array([[[1,2],[2,1]],[[3j,0],[4j,3]]])
+#factors,matrices = bkw_decompose(tensor)
+#print_frontal_slices(bkw_recompose(factors,matrices))
