@@ -69,10 +69,10 @@ for n in range(start,end):
     for rep in range(0,reps):
         factor_matrices = [random_orthogonal(n) for _ in range(0,3)]
 
-        #tensor = bkw_recompose([1 + i*(10**-12) for i in range(n)],factor_matrices) remove transpose if this needs to work
-        #_, re_factor_matrices = bkw_decompose(tensor)
-        tensor = pencil_recompose(factor_matrices)
-        re_factor_matrices = pencil_decompose(tensor) 
+        tensor = bkw_recompose([1 + i*(10**-12) for i in range(n)],factor_matrices)
+        _, re_factor_matrices = bkw_decompose(tensor)
+        #tensor = pencil_recompose(factor_matrices)
+        #re_factor_matrices = pencil_decompose(tensor) 
         
         scaled_permutations = [np.linalg.solve(U, D) for U, D in zip(re_factor_matrices, factor_matrices)]
         permutations =[]
@@ -81,7 +81,7 @@ for n in range(start,end):
             perm = np.zeros((n,n))
             for i, j in coords:
                 perm[i, j] = scaled_perm[i,j]#1 
-            permutations.append(inv(perm))
+            permutations.append(perm)
 
         for i in range(3):
             #print_frontal_slices(tensor)
