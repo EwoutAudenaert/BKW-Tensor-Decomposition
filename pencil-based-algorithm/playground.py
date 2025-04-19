@@ -29,7 +29,9 @@ def nearly_identical_orthogonal_tensor(n,eps=1e-6):
         tensor[:, :, k] = np.eye(n)  
     return tensor
 
-
+def threshold_zero(arr, h):
+    arr[arr < h] = 0
+    return arr
 
 
 def random_orthogonal(n):
@@ -59,7 +61,7 @@ def close_eigs_tensor(n,a,start=0.1,end=1):
 reps=1000
 errs = []
 start =3
-end=10
+end=4
 recompose = lambda a,b,c: np.einsum('i,j,k->ijk', a, b, c)
 
 for n in range(start,end):
@@ -71,33 +73,51 @@ for n in range(start,end):
         #_, re_factor_matrices = bkw_decompose(tensor)
         tensor = pencil_recompose(factor_matrices)
         re_factor_matrices = pencil_decompose(tensor) 
-
-        scaled_permutations = [np.linalg.solve(U, D) for U, D in zip(re_factor_matrices, factor_matrices)]
+        #for i in range(3):
+            #print_frontal_slices(tensor)
+            #print_matrix(factor_matrices[i])
+            #print_matrix(re_factor_matrices[i])
+            #print("============================================")
+        print_matrix(factor_matrices[2])
+        print_matrix(re_factor_matrices[2])
+        exit()
+       
+        scaled_permutations = [np.linalg.solve(threshold_zero(U,1e-9), threshold_zero(D,1e-9)) for U, D in zip(re_factor_matrices, factor_matrices)]
         permutations =[]
         for scaled_perm in scaled_permutations:
+            print("====================================================")
+            print_matrix(scaled_perm)
             coords = largest_modulus_coordinates_2d(scaled_perm)
             perm = np.zeros((n,n))
             for i, j in coords:
-                perm[i, j] = scaled_perm[i,j]
+                perm[i, j] = 1 
             permutations.append(perm.T)
         #permutations = scaled_permutations
-
+        exit()
 
         err =0
         re_factor_matrices = [ M @ P  for M,P in zip(re_factor_matrices,permutations)]  
         for i in range(n):
             a,b,c = [x[:,i] for x in factor_matrices]
             a_,b_,c_ = [x[:,i] for x in re_factor_matrices]
+            #print("======================================================================")
             #print("=========================")
-            #print_frontal_slices(abs(recompose(a,b,c)))
-            #print_frontal_slices(abs(recompose(a_,b_,c_)))
+            #print_frontal_slices((recompose(a,b,c)-recompose(a_,b_,c_))**2)
+    
         
-            err += np.sqrt(np.sum(np.abs(recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
+            err += np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
+        #print()
+        if (np.sqrt(np.sum((pencil_recompose(re_factor_matrices)-pencil_recompose(factor_matrices))**2))) >1:
+            pass
+            #print("================================================================================")
+            #print_frontal_slices(pencil_recompose(re_factor_matrices))
+            #print_frontal_slices(pencil_recompose(factor_matrices))
         #print(err)
         acc_err+=err
 
         #print_frontal_slices(tensor-pencil_recompose(factor_matrices))
         #acc_err += np.sqrt(np.sum((tensor - bkw_recompose([1 for i in range(n)],factor_matrices))**2))
+    print(acc_err)
     errs.append(acc_err/reps)
 
 dims = np.arange(start, end)

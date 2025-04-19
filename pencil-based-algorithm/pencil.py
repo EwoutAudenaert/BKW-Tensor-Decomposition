@@ -4,7 +4,7 @@ from scipy.linalg import inv
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from library import ttm
+from library import ttm,print_frontal_slices
 
 def pencil_decompose(tensor):
     #todo take random linear combination of slices
@@ -15,13 +15,22 @@ def pencil_decompose(tensor):
     hiddenBt = inv(T1) @ T2 #B^-T diag(_) B^T with B a factor matrix ; time O(n^3) ; space O(n^2)
     eigsB, Bt = np.linalg.eig(hiddenBt)  # B^T ; time O(n^3) ; space O(n^2)
     Bt = Bt.conj() # time O(n^2) ; space O(1)
-    B  = inv(Bt.T) # time: O(n^3) ; space O(n^2)
+    B  = inv(Bt.T.conj()) # time: O(n^3) ; space O(n^2)
     Ctensor = ttm(ttm(tensor,inv(A),1),inv(B),2) # time O(n^4) ; space O(n^3)
+    C = [] 
+
+    #for i in range(n): # time O(n^2) ; space O(n^2)
+    #    C.append(Ctensor[i,i,:])
+    #print_frontal_slices(Ctensor)
     C = []
-    for i in range(n): # time O(n^2) ; space O(n^2)
-        C.append(Ctensor[i,i,:])
+    for i in range(n):  # Time: O(n^2 * d)
+        max_j = np.argmax([np.max(np.abs(Ctensor[i, j, :])) for j in range(n)])
+        C.append(Ctensor[i, max_j, :])
+
+
+
     #we need to transpose because np puts the row into the columns
-    C = np.array(C).T.conj() # time O(n^2) ; space O(n^2)
+    C = np.array(C).T#.conj() # time O(n^2) ; space O(n^2)
     return [A,B,C]
 
 
