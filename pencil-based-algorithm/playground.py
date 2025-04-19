@@ -78,7 +78,7 @@ def get_algo_error(algo='pencil',n=3):
     re_factor_matrices=[]
 
     if algo =='bkw':
-        tensor = bkw_recompose([1 for i in range(1,n+1)],factor_matrices)
+        tensor = bkw_recompose([1+ (10**-i) for i in range(1,n+1)],factor_matrices)
         _, re_factor_matrices = bkw_decompose(tensor)
     if algo == 'pencil':
         tensor = pencil_recompose(factor_matrices)

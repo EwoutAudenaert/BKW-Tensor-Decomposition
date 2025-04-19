@@ -9,17 +9,26 @@ from library import ttm,print_frontal_slices,print_matrix,helicoidal_tensor,matr
 from find_derivative import find_derivative
 from find_kernel import kernel
 from scipy.linalg import inv,det
-#from tucker import tucker
+from tucker import tucker
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 #tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
-zn=10
+n=10
 tensor = helicoidal_tensor(n)
+matrix_heatmap(tensor[:,:,3])
 
 core,factors = tucker(tensor)
-#print([f.shape for f in factors])
-factors = [f.T  for f in factors]
-reconstructed_tensor = tl.tucker_tensor.tucker_to_tensor((core, factors[::-1]))
+print([f.shape for f in factors])
+#factors = [f.T  for f in factors]
+import numpy as np
+from functools import reduce
+
+def tucker_recompose(core, factors):
+    return reduce(lambda acc, pair: np.tensordot(acc, pair[1], axes=(0, 1)), enumerate(factors), core)
+
+
+#reconstructed_tensor = ttm(ttm(ttm(core,factors[0],1),factors[1].T,2),factors[2],3)
+reconstructed_tensor = tucker_recompose(core,factors)
 
 matrix_heatmap(reconstructed_tensor[:,:,5])
 exit()
