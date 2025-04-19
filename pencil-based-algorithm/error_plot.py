@@ -1,70 +1,115 @@
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from pencil import pencil_decompose, pencil_recompose
-import math
+from numpy.linalg import inv,det
 
 import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from library import print_matrix,print_frontal_slices,largest_modulus_coordinates_2d
+from pencil import pencil_decompose,pencil_recompose
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../bkw-algorithm')))
 from bkw import bkw_recompose, bkw_decompose
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
 
-def plot_tensor_reconstruction_error():
-    alphas = [i for i in range(2,100)]
+def nearly_identical_orthogonal_tensor(n,eps=1e-6):
+    Q1, _ = np.linalg.qr(np.random.randn(n, n))
+    Q2, _ = np.linalg.qr(np.random.randn(n, n))    
+    T1 = Q1 @ Q2.T
+    # T2 should be almost T1, but we keep it ortho
+    perturb = np.eye(n) + eps * np.random.randn(n, n)
+    U, _ = np.linalg.qr(perturb)
+    T2 = T1 @ U 
+    tensor = np.zeros((n, n, n))
+    tensor[:, :, 0] = T1
+    tensor[:, :, 1] = T2
+    for k in range(2, n):
+        tensor[:, :, k] = np.eye(n)  
+    return tensor
 
-    pencil_errors = []
-    bkw_errors = []
-
-    max_err = 0
-    max_err_alpha = None    
-
-    for a in alphas:
-        c=1
-        f1 = [[c,0], [0, c]]
-        f2 = [[c,a], [a, c]]
-        tensor = np.stack([f1, f2], axis=2).astype(complex)
-
-        pencil_tensor = pencil_recompose(pencil_decompose(tensor))
-        factors,factor_matrices = bkw_decompose(tensor)
-        bkw_tensor = bkw_recompose(factors,factor_matrices)
-
-        pencil_err = np.abs(tensor - pencil_tensor).mean()
-        bkw_err = np.abs(tensor - bkw_tensor).mean()
-
-        if pencil_err > max_err:
-            max_err = pencil_err
-            max_err_alpha = a
-
-        pencil_errors.append(pencil_err)
-        bkw_errors.append(bkw_err)
-
-    order = int(np.floor(math.log10(max_err)))
-    rounded = round(max_err / 10**order, 2)
-    print(f"Max Pencil Error: error {rounded}, power of 10 : {order} in alpha : {max_err_alpha} or log : {math.log(max_err_alpha,1.5**-1)}")
-
-    """filtered = [(a, e) for a, e in zip(alphas, pencil_errors) if e > 1e-8]
-    log_alphas = np.log([a for a, e in filtered])
-    log_errors = np.log([e for a, e in filtered])
-
-    coeffs = np.polyfit(log_alphas, log_errors, 1)
-    slope, intercept = coeffs
-    fitted = np.exp(intercept) * np.array(alphas) ** slope
-    """
-    sns.set(style="whitegrid")
-    plt.figure(figsize=(8, 5))
-
-    sns.lineplot(x=alphas, y=pencil_errors, marker='o', label="Pencil")
-    sns.lineplot(x=alphas, y=bkw_errors, marker='s', label="BKW")
-    plt.plot(alphas, linestyle='--', color='gray', label="Pencil Error (Quadratic Fit)")
+def threshold_zero(arr, h):
+    arr[arr < h] = 0
+    return arr
 
 
-    plt.xscale('log')
-    plt.gca()  
-    plt.xlabel("alpha")
-    plt.ylabel("Mean Absolute Reconstruction Error")
-    plt.title("Reconstruction Error vs. Alpha")
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+def random_orthogonal(n):
+    H = np.random.randn(n, n)
+    Q, _ = np.linalg.qr(H)
+    return Q
+def close_eigs_matrices(n, a,start,end):
+    Q1 = random_orthogonal(n)
+    Q2 = random_orthogonal(n)
+    eigvals1 = np.linspace(start, end, n)
+    eigvals2 = eigvals1 + a 
+    D1 = np.diag(eigvals1)
+    D2 = np.diag(eigvals2)
+    A1 = Q1 @ D1 @ Q1.T
+    A2 = Q1 @ D2 @ Q1.T
+    return A1, A2
 
-plot_tensor_reconstruction_error()
+def close_eigs_tensor(n,a,start=0.1,end=1):
+    T1,T2 = close_eigs_matrices(n,a,start,end)
+    tensor = np.zeros((n, n, n))
+    tensor[:, :, 0] = T1
+    tensor[:, :, 1] = T2
+    for k in range(2, n):
+        tensor[:, :, k] = random_orthogonal(n)
+    return tensor
+
+reps=1000
+errs = []
+start =3
+end=10
+recompose = lambda a,b,c: np.einsum('i,j,k->ijk', a, b, c)
+"""
+for n in range(start,end):
+    acc_err = 0
+    for rep in range(0,reps):
+       
+        acc_err+=err
+    errs.append(acc_err/reps)
+"""
+def get_algo_error(algo='pencil',n=3):
+    factor_matrices = [random_orthogonal(n) for _ in range(0,3)]
+
+    tensor=None
+    re_factor_matrices=[]
+
+    if algo =='bkw':
+        tensor = bkw_recompose([i for i in range(1,n+1)],factor_matrices)
+        _, re_factor_matrices = bkw_decompose(tensor)
+    if algo == 'pencil':
+        tensor = pencil_recompose(factor_matrices)
+        re_factor_matrices = pencil_decompose(tensor) 
+    
+    scaled_permutations = [np.linalg.solve(U, D) for U, D in zip(re_factor_matrices, factor_matrices)]
+    permutations =[]
+    for scaled_perm in scaled_permutations:
+        coords = largest_modulus_coordinates_2d(scaled_perm)
+        perm = np.zeros((n,n))
+        for i, j in coords:
+            perm[i, j] = scaled_perm[i,j]
+        permutations.append(perm)
+    err =0
+    re_factor_matrices = [ M @ P  for M,P in zip(re_factor_matrices,permutations)]  
+    for i in range(n):
+        a,b,c = [x[:,i] for x in factor_matrices]
+        a_,b_,c_ = [x[:,i] for x in re_factor_matrices]
+        
+        err += np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
+    return err
+
+
+results = [get_algo_error('bkw') for _ in range(10**4)]
+
+sns.set(style="whitegrid", font_scale=1.2)
+plt.figure(figsize=(10, 6))
+sns.histplot(results, bins='auto', kde=True, log_scale=(True, False), color="royalblue", edgecolor="white")
+
+plt.title("Log-X Distribution of Decomposition Error", fontsize=14)
+plt.xlabel("Error (log-scale)")
+plt.ylabel("Frequency")
+plt.tight_layout()
+plt.show()

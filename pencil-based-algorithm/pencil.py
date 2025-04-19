@@ -17,11 +17,7 @@ def pencil_decompose(tensor):
     Bt = Bt.conj() # time O(n^2) ; space O(1)
     B  = inv(Bt.T.conj()) # time: O(n^3) ; space O(n^2)
     Ctensor = ttm(ttm(tensor,inv(A),1),inv(B),2) # time O(n^4) ; space O(n^3)
-    C = [] 
 
-    #for i in range(n): # time O(n^2) ; space O(n^2)
-    #    C.append(Ctensor[i,i,:])
-    #print_frontal_slices(Ctensor)
     C = []
     for i in range(n):  # Time: O(n^2 * d)
         max_j = np.argmax([np.max(np.abs(Ctensor[i, j, :])) for j in range(n)])
