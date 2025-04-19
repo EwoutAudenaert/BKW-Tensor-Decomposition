@@ -47,7 +47,7 @@ def bkw_recompose(factors,factor_matrices):
     for i in range(n):
         factor_tensor[i,i,i]=factors[i]
     [A,B,C] = factor_matrices
-    return ttm(ttm(ttm(factor_tensor,inv(A).T,1),inv(B).T,2),inv(C).T,3)
+    return ttm(ttm(ttm(factor_tensor,inv(A).T,1),inv(B).T,2),inv(C).T,3) # time O(n^4) , space O(n^3)
 
 
 #tensor =  np.array([[[1,2],[2,1]],[[3j,0],[4j,3]]])
