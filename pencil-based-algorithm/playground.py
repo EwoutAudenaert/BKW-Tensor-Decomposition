@@ -61,56 +61,56 @@ def close_eigs_tensor(n,a,start=0.1,end=1):
 reps=1000
 errs = []
 start =3
-end=4
+end=10
 recompose = lambda a,b,c: np.einsum('i,j,k->ijk', a, b, c)
-
+"""
 for n in range(start,end):
     acc_err = 0
     for rep in range(0,reps):
-        factor_matrices = [random_orthogonal(n) for _ in range(0,3)]
-
-        tensor = bkw_recompose([1 + i*(10**-12) for i in range(n)],factor_matrices)
-        _, re_factor_matrices = bkw_decompose(tensor)
-        #tensor = pencil_recompose(factor_matrices)
-        #re_factor_matrices = pencil_decompose(tensor) 
-        
-        scaled_permutations = [np.linalg.solve(U, D) for U, D in zip(re_factor_matrices, factor_matrices)]
-        permutations =[]
-        for scaled_perm in scaled_permutations:
-            coords = largest_modulus_coordinates_2d(scaled_perm)
-            perm = np.zeros((n,n))
-            for i, j in coords:
-                perm[i, j] = scaled_perm[i,j]#1 
-            permutations.append(perm)
-
-        for i in range(3):
-            #print_frontal_slices(tensor)
-            print_matrix(re_factor_matrices[i] @ permutations[i])
-            print_matrix(factor_matrices[i])
-            print("============================================")
-
-        err =0
-        re_factor_matrices = [ M @ P  for M,P in zip(re_factor_matrices,permutations)]  
-        for i in range(n):
-            a,b,c = [x[:,i] for x in factor_matrices]
-            a_,b_,c_ = [x[:,i] for x in re_factor_matrices]
-            
-            err += np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
-        #print(err)
-        print(np.sqrt(np.sum((pencil_recompose(re_factor_matrices)- tensor)) ** 2))
+       
         acc_err+=err
-
-        #print_frontal_slices(tensor-pencil_recompose(factor_matrices))
-        #acc_err += np.sqrt(np.sum((tensor - bkw_recompose([1 for i in range(n)],factor_matrices))**2))
-    #print(acc_err)
     errs.append(acc_err/reps)
+"""
+def get_algo_error(algo='pencil',n=3):
+    factor_matrices = [random_orthogonal(n) for _ in range(0,3)]
 
-dims = np.arange(start, end)
-r = errs 
-sns.set(style="whitegrid")
-sns.lineplot(x=dims, y=r, marker="o", label="Observed")
-plt.xlabel("Dimensions")
-plt.ylabel("Error")
-plt.title("Decomposition Error vs Dimensions")
-plt.legend()
+    tensor=None
+    re_factor_matrices=[]
+
+    if algo =='bkw':
+        tensor = bkw_recompose([1 for i in range(1,n+1)],factor_matrices)
+        _, re_factor_matrices = bkw_decompose(tensor)
+    if algo == 'pencil':
+        tensor = pencil_recompose(factor_matrices)
+        re_factor_matrices = pencil_decompose(tensor) 
+    
+    scaled_permutations = [np.linalg.solve(U, D) for U, D in zip(re_factor_matrices, factor_matrices)]
+    permutations =[]
+    for scaled_perm in scaled_permutations:
+        coords = largest_modulus_coordinates_2d(scaled_perm)
+        perm = np.zeros((n,n))
+        for i, j in coords:
+            perm[i, j] = scaled_perm[i,j]
+        permutations.append(perm)
+    err =0
+    re_factor_matrices = [ M @ P  for M,P in zip(re_factor_matrices,permutations)]  
+    for i in range(n):
+        a,b,c = [x[:,i] for x in factor_matrices]
+        a_,b_,c_ = [x[:,i] for x in re_factor_matrices]
+        
+        err += np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
+    return err
+
+
+zresults = [get_algo_error('bkw') for _ in range(10**4)]
+
+sns.set(style="whitegrid", font_scale=1.2)
+plt.figure(figsize=(10, 6))
+sns.histplot(zresults, bins='auto', kde=True, log_scale=(True, False), color="royalblue", edgecolor="white")
+
+plt.title("Log-X Distribution of Decomposition Error", fontsize=14)
+plt.xlabel("Error (log-scale)")
+plt.ylabel("Frequency")
+plt.tight_layout()
 plt.show()
+
