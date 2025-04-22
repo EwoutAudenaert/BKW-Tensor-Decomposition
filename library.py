@@ -73,16 +73,20 @@ def ttm(X, m, mode):
         case 1:
             X_mode = X.reshape(X.shape[0], -1) # time 1 ; space 1
             Y = m @ X_mode # time n^3 ; space n^2
+
             return Y.reshape(m.shape[0], X.shape[1], X.shape[2]) # time 1 ; space n^3
 
         case 2:
             X_mode = X.transpose(1, 0, 2).reshape(X.shape[1], -1)
             Y = m @ X_mode
+
+
             return Y.reshape(m.shape[0], X.shape[0], X.shape[2]).transpose(1, 0, 2)
 
         case 3:
             X_mode = X.transpose(2, 0, 1).reshape(X.shape[2], -1)
             Y = m @ X_mode
+
             return Y.reshape(m.shape[0], X.shape[0], X.shape[1]).transpose(1, 2, 0)
         
 

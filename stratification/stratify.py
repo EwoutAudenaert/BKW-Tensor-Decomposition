@@ -9,29 +9,19 @@ from library import ttm,print_frontal_slices,print_matrix,helicoidal_tensor,matr
 from find_derivative import find_derivative
 from find_kernel import kernel
 from scipy.linalg import inv,det
-from tucker import tucker
+from tucker import tucker,mlp
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-#tensor =  np.array([[[1,2],[2,1]],[[3,0],[4,3]]])
+from functools import reduce
+from tensorly import tucker_to_tensor
+#tensor =  np.array([[[1,2,3],[2,1,-1],[0,7,-1]],[[3,0,0],[4,3,1],[9,0,5]],[[4,3,8],[9,0,5],[1,2,3]]])
+#tensor = np.array([np.ones((3,3)),np.eye(3),-np.ones((3,3))])
+#print_frontal_slices(tensor)
+#core,factors = tucker(tensor)
+
 n=10
 tensor = helicoidal_tensor(n)
-matrix_heatmap(tensor[:,:,3])
 
-core,factors = tucker(tensor)
-print([f.shape for f in factors])
-#factors = [f.T  for f in factors]
-import numpy as np
-from functools import reduce
-
-def tucker_recompose(core, factors):
-    return reduce(lambda acc, pair: np.tensordot(acc, pair[1], axes=(0, 1)), enumerate(factors), core)
-
-
-#reconstructed_tensor = ttm(ttm(ttm(core,factors[0],1),factors[1].T,2),factors[2],3)
-reconstructed_tensor = tucker_recompose(core,factors)
-
-matrix_heatmap(reconstructed_tensor[:,:,5])
-exit()
 def generate_invertible_matrices(n, count=3):
     matrices = []
     while len(matrices) < count:
@@ -66,30 +56,31 @@ def is_scaled_identity_matrix(A):
         return True
     return False
 
-result =[]
-for m in basis:
-    #eigenvalues instead
-    
-    m_sym = Matrix(m.round(decimals=1)).applyfunc(lambda x: nsimplify(x, rational=True))
-    
-    P, J = Matrix(m_sym).jordan_form()
-    P = np.array(P.evalf(), dtype=np.complex128)
-    J = np.array(J.evalf(), dtype=np.complex128)
 
-    A_diag = np.diag(np.diag(J))
-    
-    result.append(inv(P))
-
-[A,B,C]  = result
-stratified_core = ttm(ttm(ttm(tensor,A,1),B,2),C,3)
-# factor matrices ttm1 ttm2 ttm3 with the transposed matrices
-#reconstructed_tensor = tucker_recompose(stratified_core, factors)
-reconstructed_tensor = tl.tucker_tensor.tucker_to_tensor((core, factors[::-1]))
 
 def round_below_threshold_to_zero(tensor, threshold):
     tensor[tensor < threshold] = 0
     return tensor
-print_matrix(tensor[:,:,5])
+
+result =[]
+for m in basis:
+    #eigenvalues instead
+    _,P = np.linalg.eig(m)
+  
+    #A_diag = np.diag(np.diag(J))
+    
+    result.append(inv(P))
+
+[A,B,C]  = result
+stratified_core = ttm(ttm(ttm(core,A.T,1),B.T,2),C.T,3)
+# factor matrices ttm1 ttm2 ttm3 with the transposed matrices
+#reconstructed_tensor = tucker_recompose(stratified_core, factors)
+#reconstructed_tensor = tl.tucker_tensor.tucker_to_tensor((core, factors[::-1]))
+
+
+#print_matrix(tensor[:,:,5])
+reconstructed_tensor  = ttm(ttm(ttm(stratified_core.transpose(2,0,1),factors[0].T.conj(),1),factors[1].T.conj(),2),  factors[2].T.conj(),3)
+
 reconstructed_tensor= round_below_threshold_to_zero(reconstructed_tensor,1)
 
 
@@ -126,8 +117,8 @@ ax.set_ylabel('Y (Index)')
 ax.set_zlabel('Z (Index)')
 ax.set_title('Oorspronkelijke tensor')
 ax.view_init(elev=ELEV, azim=AZIM)
- 
- 
+
+
 #reconstruction
 ax2 = fig.add_subplot(122, projection='3d')
 

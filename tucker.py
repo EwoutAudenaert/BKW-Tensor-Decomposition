@@ -25,11 +25,11 @@ def tucker(X,threshold=1e-10):
 
     for n in range(n_dims):
         X_n = unfold(X, n)
-        U, S, _ = np.linalg.svd(X_n, full_matrices=False)
+        U, S, _ = np.linalg.svd(X_n)
 
         i = 0
         try:
-            threshold=1
+            threshold=1e-10
             while S[i] > threshold:
                 i += 1
         except IndexError:

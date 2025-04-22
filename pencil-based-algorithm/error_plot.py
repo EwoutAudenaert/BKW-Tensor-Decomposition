@@ -79,7 +79,8 @@ def get_algo_error(algo='pencil',n=3):
 
     if algo =='bkw':
         tensor = bkw_recompose([i for i in range(1,n+1)],factor_matrices)
-        _, re_factor_matrices = bkw_decompose(tensor)
+        factors, re_factor_matrices = bkw_decompose(tensor)
+                    
     if algo == 'pencil':
         tensor = pencil_recompose(factor_matrices)
         re_factor_matrices = pencil_decompose(tensor) 
@@ -90,19 +91,47 @@ def get_algo_error(algo='pencil',n=3):
         coords = largest_modulus_coordinates_2d(scaled_perm)
         perm = np.zeros((n,n))
         for i, j in coords:
-            perm[i, j] = scaled_perm[i,j]
+            perm[i, j] =  -1 if scaled_perm[i,j] <0 else 1
         permutations.append(perm)
     err =0
-    re_factor_matrices = [ M @ P  for M,P in zip(re_factor_matrices,permutations)]  
+    #re_factor_matrices = [ M @ P  for M,P in zip(re_factor_matrices,permutations)]  
     for i in range(n):
         a,b,c = [x[:,i] for x in factor_matrices]
         a_,b_,c_ = [x[:,i] for x in re_factor_matrices]
+        #err += np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
         
-        err += np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
+        if algo=='bkw':
+            reconstructed=bkw_recompose(factors,re_factor_matrices)
+            err += np.sqrt(np.sum((tensor-reconstructed) ** 2))#
+        else:
+            err += np.sqrt(np.sum((tensor-pencil_recompose(factor_matrices)) ** 2))
     return err
 
+size=10**3
+results_pencil = [get_algo_error('pencil') for _ in range(size)]
+results_bkw = [get_algo_error('bkw') for _ in range(size)]
+sns.set(style="whitegrid", font_scale=1.2)
+plt.figure(figsize=(10, 6))
 
-results = [get_algo_error('bkw') for _ in range(10**4)]
+
+
+sns.histplot(results_pencil, bins='auto', kde=True, log_scale=(True, False),
+           color="royalblue", edgecolor="white", label="pencil", alpha=0.6)
+
+sns.histplot(results_bkw, bins='auto', kde=True, log_scale=(True, False),
+            color="crimson", edgecolor="white", label="bkw", alpha=0.6)
+
+plt.title("Log-x distribution of decomposition-error", fontsize=14)
+plt.xlabel("Error (log-scale)")
+plt.ylabel("Frequency")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+"""
+#one function only :
+
+results = [get_algo_error('pencil') for _ in range(10**4)]
 
 sns.set(style="whitegrid", font_scale=1.2)
 plt.figure(figsize=(10, 6))
@@ -113,3 +142,5 @@ plt.xlabel("Error (log-scale)")
 plt.ylabel("Frequency")
 plt.tight_layout()
 plt.show()
+
+"""

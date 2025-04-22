@@ -2,17 +2,12 @@ from find_eigenvalues import diagonalize_basis
 import numpy as np
 from scipy.linalg import inv
 import numpy as np
-
-
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from find_derivative import find_derivative
 from find_kernel import kernel
-from library import ttm,print_frontal_slices,largest_modulus_coordinates_3d
-
-
-
+from library import ttm,print_frontal_slices,largest_modulus_coordinates_3d,print_matrix
 
 
 def bkw_decompose(tensor):
@@ -24,32 +19,49 @@ def bkw_decompose(tensor):
     [Ap,Bp,Cp] =  permuted_factors
     sparse = ttm(ttm(ttm(tensor,Ap.T,1),Bp.T,2),Cp.T,3) # Time: O(n^3)
     non_zero_coords = largest_modulus_coordinates_3d(sparse) 
-
+    
     permutation_tensor = np.zeros((n, n, n))
     # Place ones at the specified coordinates
     for p, q, s in non_zero_coords:
         permutation_tensor[p, q, s] = 1
-
+ 
     ones_vec = np.ones((1, n))
     [X1,X2,X3] = [np.squeeze(ttm(permutation_tensor,ones_vec,i)) for i in range(1,4)] 
-    factor_tensor = ttm(ttm(ttm(sparse,X1,1),X2,2),X3,3)
-    A = (Ap @ (X1.T.conj()))
-    B = (Bp @ (X2.T.conj()))
-    C = (Cp @ (X3.T.conj()))
+   
+    #print("X3 : ")
+    #print_matrix(X3)
+  
 
+    factor_tensor = ttm(ttm(sparse,X2.T.conj(),1),X1.T.conj(),2)
+    
+    #print("factor tensor ")
+    #print_frontal_slices(factor_tensor)
+    #print("reconstructed tensor")
+    #print_frontal_slices(ttm(ttm(ttm(ttm(ttm(factor_tensor,X2,1),X1,2),,1),,2),,3))
+
+    A = inv(Ap.T) @ X2
+    B = inv(Bp.T) @ X1
+    C = inv(Cp.T)
+    #C=Cp
+    
     factors =[]
     for k in range(len(tensor)):
         factors.append(factor_tensor[k,k,k])
+
+
     return factors,[A,B,C]
+
 def bkw_recompose(factors,factor_matrices):
     n=len(factor_matrices[0])
     factor_tensor = np.zeros((n,n,n), dtype=complex)
     for i in range(n):
         factor_tensor[i,i,i]=factors[i]
     [A,B,C] = factor_matrices
-    return ttm(ttm(ttm(factor_tensor,inv(A).T,1),inv(B).T,2),inv(C).T,3)
+
+    return ttm(ttm(ttm(factor_tensor,A,1),B,2),C,3)
 
 
 #tensor =  np.array([[[1,2],[2,1]],[[3j,0],[4j,3]]])
+#print_frontal_slices(tensor)
 #factors,matrices = bkw_decompose(tensor)
 #print_frontal_slices(bkw_recompose(factors,matrices))
