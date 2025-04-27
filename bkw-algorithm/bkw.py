@@ -53,6 +53,7 @@ def bkw_recompose(factors,factor_matrices):
         factor_tensor[i,i,i]=factors[i]
     [A,B,C] = factor_matrices
 
+
     return ttm(ttm(ttm(factor_tensor,A,1),B,2),C,3)
 
 
