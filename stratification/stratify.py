@@ -2,18 +2,15 @@ import numpy as np
 import sys
 import os
 import tensorly as tl
-
-from sympy import Matrix, nsimplify
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from library import ttm,print_frontal_slices,print_matrix,helicoidal_tensor,matrix_heatmap
+from library import ttm,helicoidal_tensor,print_frontal_slices,print_matrix,matrix_heatmap,plot_tensor,ttmR,random_block_tensor
 from find_derivative import find_derivative
 from find_kernel import kernel
 from scipy.linalg import inv,det
-from tucker import tucker,mlp
+from tucker import tucker,mlp,tucker_recompose
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from functools import reduce
-from tensorly import tucker_to_tensor
+
 #tensor =  np.array([[[1,2,3],[2,1,-1],[0,7,-1]],[[3,0,0],[4,3,1],[9,0,5]],[[4,3,8],[9,0,5],[1,2,3]]])
 #tensor = np.array([np.ones((3,3)),np.eye(3),-np.ones((3,3))])
 #print_frontal_slices(tensor)
@@ -21,7 +18,9 @@ from tensorly import tucker_to_tensor
 
 n=10
 tensor = helicoidal_tensor(n)
-
+#core, factors = tucker(tensor) 
+#print(core.shape)
+core = tensor
 def generate_invertible_matrices(n, count=3):
     matrices = []
     while len(matrices) < count:
@@ -32,6 +31,8 @@ def generate_invertible_matrices(n, count=3):
 
 [X,Y,Z] = generate_invertible_matrices(n,3)
 scrambled_tensor = ttm(ttm(ttm(tensor,X,1),Y,2),Z,3) #todo add new ttms
+#de_scrambled_tensor = ttm(ttm(ttm(scrambled_tensor,inv(X),1),inv(Y),2),inv(Z),3)
+#plot_tensor(tensor,tensor,n)
 
 #some tucker ask rank to get a threshold for the singular value threshold
 # and that threshold is related in the rank, the multilineair rank is related to the number of singular value of the tensor
@@ -40,6 +41,7 @@ scrambled_tensor = ttm(ttm(ttm(tensor,X,1),Y,2),Z,3) #todo add new ttms
 #make own tucker. not dleto!!!!!
 #this does not work because it will always keep the whole kernel
 core, factors = tucker(scrambled_tensor) 
+
 
 #have a look at of BKW heuristic version instead
 # trivial solution dimension is 2 => hardcode step 1. If you have the derivative map and 
@@ -62,78 +64,23 @@ def round_below_threshold_to_zero(tensor, threshold):
     tensor[tensor < threshold] = 0
     return tensor
 
+from scipy.linalg import schur
+
+
 result =[]
 for m in basis:
-    #eigenvalues instead
-    _,P = np.linalg.eig(m)
-  
-    #A_diag = np.diag(np.diag(J))
-    
-    result.append(inv(P))
+    #eigenvalues instead of jordan normal form
+    #vals,P = np.linalg.eig(m)
+    #result.append(inv(P))
+    T, P = schur(m, output='complex')  # T is upper triangular (almost Jordan form)
+    result.append(inv(P).T)
 
 [A,B,C]  = result
-stratified_core = ttm(ttm(ttm(core,A.T,1),B.T,2),C.T,3)
-# factor matrices ttm1 ttm2 ttm3 with the transposed matrices
-#reconstructed_tensor = tucker_recompose(stratified_core, factors)
-#reconstructed_tensor = tl.tucker_tensor.tucker_to_tensor((core, factors[::-1]))
 
 
-#print_matrix(tensor[:,:,5])
-reconstructed_tensor  = ttm(ttm(ttm(stratified_core.transpose(2,0,1),factors[0].T.conj(),1),factors[1].T.conj(),2),  factors[2].T.conj(),3)
+stratified_core = ttm(ttm(ttm(core,A,1),B,2),C,3)
 
-reconstructed_tensor= round_below_threshold_to_zero(reconstructed_tensor,1)
-
-
-
-# parameters
-SHOW_SURFACE = True
-ELEV = 30
-AZIM = 130
-grid_size = n
-
-u = np.linspace(0, 2 * np.pi, 100)
-v = np.linspace(-2, 2, 100)
-U, V = np.meshgrid(u, v)
-X = np.sin(U) * V
-Y = np.cos(U) * V
-Z = U
-
-# normalize coords
-X_discrete = ((X - X.min()) / (X.max() - X.min()) * (grid_size - 1)).astype(int)
-Y_discrete = ((Y - Y.min()) / (Y.max() - Y.min()) * (grid_size - 1)).astype(int)
-Z_discrete = ((Z - Z.min()) / (Z.max() - Z.min()) * (grid_size - 1)).astype(int)
-
-fig = plt.figure(figsize=(12, 10))
-ax = fig.add_subplot(121, projection='3d')
-
-x_idx, y_idx, z_idx = np.where(tensor == 1)
-ax.scatter(x_idx, y_idx, z_idx, color="red", s=10, alpha=0.8, label="Original Points")
-
-if SHOW_SURFACE:
-    ax.plot_surface(X_discrete, Y_discrete, Z_discrete, color="blue", alpha=0.15, edgecolor='none')  
-
-ax.set_xlabel('X (Index)')
-ax.set_ylabel('Y (Index)')
-ax.set_zlabel('Z (Index)')
-ax.set_title('Oorspronkelijke tensor')
-ax.view_init(elev=ELEV, azim=AZIM)
-
-
-#reconstruction
-ax2 = fig.add_subplot(122, projection='3d')
-
-x_idx, y_idx, z_idx = np.where(reconstructed_tensor >= 0.5)  
-ax2.scatter(x_idx, y_idx, z_idx, color="green", s=10, alpha=0.8, label="Reconstructed Points")  
-
-if SHOW_SURFACE:
-    ax2.plot_surface(X_discrete, Y_discrete, Z_discrete, color="blue", alpha=0.15, edgecolor='none') 
-
-ax2.set_xlabel('X (Index)')
-ax2.set_ylabel('Y (Index)')
-ax2.set_zlabel('Z (Index)')
-ax2.set_title('Gereconstrueerde tensor (Tucker Decomposition)')
-ax2.view_init(elev=ELEV, azim=AZIM)
-plt.subplots_adjust(wspace=0.5) 
-
-plt.tight_layout()
-plt.show()
+#reconstructed_tensor  = tucker_recompose(stratified_core,factors)
+reconstructed_tensor = stratified_core
+#reconstructed_tensor= round_below_threshold_to_zero(reconstructed_tensor,1)
+plot_tensor(tensor,reconstructed_tensor,n,False)

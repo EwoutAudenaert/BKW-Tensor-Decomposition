@@ -94,19 +94,22 @@ def get_algo_error(algo='pencil',n=3):
             perm[i, j] =  -1 if scaled_perm[i,j] <0 else 1
         permutations.append(perm)
     err =0
-    #re_factor_matrices = [ M @ P  for M,P in zip(re_factor_matrices,permutations)]  
+    re_factor_matrices = [ M @ P  for M,P in zip(re_factor_matrices,permutations)]  
     for i in range(n):
         a,b,c = [x[:,i] for x in factor_matrices]
         a_,b_,c_ = [x[:,i] for x in re_factor_matrices]
-        #err += np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
-        
+        err += np.sqrt(np.sum((recompose(a,b,c) - recompose(a_,b_,c_)) ** 2))
+        """
         if algo=='bkw':
             reconstructed=bkw_recompose(factors,re_factor_matrices)
             err += np.sqrt(np.sum((tensor-reconstructed) ** 2))#
         else:
             err += np.sqrt(np.sum((tensor-pencil_recompose(factor_matrices)) ** 2))
+            """
     return err
 
+
+# the error distribution plot
 size=10**3
 results_pencil = [get_algo_error('pencil') for _ in range(size)]
 results_bkw = [get_algo_error('bkw') for _ in range(size)]
@@ -116,7 +119,7 @@ plt.figure(figsize=(10, 6))
 
 
 sns.histplot(results_pencil, bins='auto', kde=True, log_scale=(True, False),
-           color="royalblue", edgecolor="white", label="pencil", alpha=0.6)
+            color="royalblue", edgecolor="white", label="pencil", alpha=0.6)
 
 sns.histplot(results_bkw, bins='auto', kde=True, log_scale=(True, False),
             color="crimson", edgecolor="white", label="bkw", alpha=0.6)

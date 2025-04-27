@@ -40,3 +40,5 @@ def tucker(X,threshold=1e-10):
     return core, factors
 
 
+def tucker_recompose(core,factors):
+    return ttm(ttm(ttm(core.transpose(2,1,0),factors[0].T,1),factors[1].T,2),  factors[2].T,3)

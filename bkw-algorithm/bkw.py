@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from find_derivative import find_derivative
 from find_kernel import kernel
-from library import ttm,print_frontal_slices,largest_modulus_coordinates_3d,print_matrix
+from library import ttm,print_frontal_slices,largest_modulus_coordinates_3d,print_matrix,plot_tensor,plot_tensor_projection
 
 
 def bkw_decompose(tensor):
@@ -24,26 +24,21 @@ def bkw_decompose(tensor):
     # Place ones at the specified coordinates
     for p, q, s in non_zero_coords:
         permutation_tensor[p, q, s] = 1
- 
+
     ones_vec = np.ones((1, n))
     [X1,X2,X3] = [np.squeeze(ttm(permutation_tensor,ones_vec,i)) for i in range(1,4)] 
-   
-    #print("X3 : ")
-    #print_matrix(X3)
-  
+
 
     factor_tensor = ttm(ttm(sparse,X2.T.conj(),1),X1.T.conj(),2)
-    
-    #print("factor tensor ")
-    #print_frontal_slices(factor_tensor)
-    #print("reconstructed tensor")
-    #print_frontal_slices(ttm(ttm(ttm(ttm(ttm(factor_tensor,X2,1),X1,2),,1),,2),,3))
+    #plot_tensor(tensor,factor_tensor,n,0.5,False,title2="Spaarse tensor")
+    #plot_tensor_projection(tensor,"Original tensor")
+    #plot_tensor_projection(sparse,"Sparse tensor")
+    #plot_tensor_projection(factor_tensor,"Factor tensor")
 
     A = inv(Ap.T) @ X2
     B = inv(Bp.T) @ X1
     C = inv(Cp.T)
-    #C=Cp
-    
+
     factors =[]
     for k in range(len(tensor)):
         factors.append(factor_tensor[k,k,k])
