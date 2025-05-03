@@ -11,7 +11,7 @@ The main reference works for this project are:
 - [Peter A. Brooksbank, Martin D. Kassabov, and James B. Wilson, *Detecting cluster patterns in tensor data*, 2024.](https://arxiv.org/abs/2408.17425)
 - [Nick Vannieuwenhoven, *A chiseling algorithm for low-rank Grassmann decomposition of skew-symmetric tensors*, 2024.](https://arxiv.org/abs/2410.14486)
 
-We also gratefully acknowledge the open-source project [OpenDleto](https://github.com/thetensor-space/OpenDleto)
+Special thanks goes out to Professor N. Vannieuwenhoven and D. Thorsteinsson for supporting us during the course of this thesis. We also gratefully acknowledge the open-source project [OpenDleto](https://github.com/thetensor-space/OpenDleto)
 
 ---
 
