@@ -3,19 +3,23 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import time
 from scipy.optimize import curve_fit
-from pencil import pencil_decompose, pencil_recompose
 import sys
 import os
-
+from exp_library import random_orthogonal
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../pencil-based-algorithm')))
+from pencil import pencil_decompose, pencil_recompose
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../bkw-algorithm')))
 from bkw import bkw_recompose, bkw_decompose
 
-def random_orthogonal(n):
-    H = np.random.randn(n, n)
-    Q, _ = np.linalg.qr(H)
-    return Q
+# This script plots the runtime of the BKW-based and pencil-based decomposition algorithms as a function of tensor dimension.
+# start: minimum dimension n of the cubic tensors (n x n x n) tested
+# end: maximum dimension n of the cubic tensors (n x n x n) tested
+# In this figure, start is set to 3 and end is set to 20.
+start = 3
+end = 20
 
-def measure_time(algo, n, repetitions=50):
+
+def measure_time(algo, n, repetitions=20):
     times = []
     for _ in range(repetitions):
         factor_matrices = [random_orthogonal(n) for _ in range(3)]
@@ -35,8 +39,7 @@ def measure_time(algo, n, repetitions=50):
         times.append(end - start)
     return np.mean(times)
 
-start = 3
-end = 15
+end=end+1
 dims = range(start, end + 1)
 dims_array = np.array(list(dims))
 
@@ -44,8 +47,8 @@ times_pencil = []
 times_bkw = []
 
 for n in dims:
-    times_pencil.append(measure_time('pencil', n))
     times_bkw.append(measure_time('bkw', n))
+    times_pencil.append(measure_time('pencil', n))
 
 def n4(x, a):
     return a * x**4

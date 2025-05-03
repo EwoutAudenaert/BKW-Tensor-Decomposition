@@ -3,12 +3,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import time
 from scipy.optimize import curve_fit
+from exp_library import random_orthogonal
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../pencil-based-algorithm')))
 from pencil import pencil_decompose, pencil_recompose
 
-def random_orthogonal(n):
-    H = np.random.randn(n, n)
-    Q, _ = np.linalg.qr(H)
-    return Q
+# This script plots the runtime of the pencil-based decomposition algorithm as a function of tensor dimension.
+# start: minimum dimension n of the cubic tensors (n x n x n) tested
+# end: maximum dimension n of the cubic tensors (n x n x n) tested
+# In this figure, start is set to 3 and end is set to 100.
+
+start = 3
+end = 100
 
 def measure_time_pencil(n, repetitions=50):
     times = []
@@ -21,8 +26,7 @@ def measure_time_pencil(n, repetitions=50):
         times.append(end - start)
     return np.mean(times)
 
-start = 3
-end = 50
+
 dims = range(start, end + 1)
 dims_array = np.array(list(dims))
 
