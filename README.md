@@ -116,6 +116,22 @@ Experiment: `plots/time_pencil.py`
 ![Runtime vs Dimension (Pencil Only)](images/time_pencil.png)
 
 ---
+### Pseudocode
+Main algorithm: BKW
+![afbeelding](https://github.com/user-attachments/assets/1fe54d96-2162-4ed8-95eb-aad0cfaffe01)
+Step 1
+![afbeelding](https://github.com/user-attachments/assets/f5783af3-490b-4e85-b1db-df936c160332)
+Step 2
+![afbeelding](https://github.com/user-attachments/assets/319df688-4e77-439b-a07e-ffc64b8b27aa)
+Step 3
+![afbeelding](https://github.com/user-attachments/assets/2f140f77-71b6-451d-8800-a168b4cb006f)
+Step 4
+![afbeelding](https://github.com/user-attachments/assets/f6ee3f90-5f12-47c7-833a-16bf00dfe004)
+Step 5
+![afbeelding](https://github.com/user-attachments/assets/6c559df5-cc45-49cb-8947-b4f6dedd053f)
+
+
+---
 
 ## License
 
