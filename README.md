@@ -83,6 +83,39 @@ To run an experiment:
 python plots/<script_name>.py
 ```
 ---
+## Results
+
+### Error vs Dimension
+
+Experiment: `plots/error_vs_dimension.py`
+
+![Error vs Dimension](images/dim_vs_error.png)
+
+---
+
+### Forward Error Distribution (BKW vs Pencil)
+
+Experiment: `plots/forward_error_distribution_bkw_vs_pencil.py`
+
+![Forward Error Distribution](images/fout_verdeling.png)
+
+---
+
+### Runtime vs Dimension (BKW and Pencil)
+
+Experiment: `plots/time_bkw_vs_pencil.py`
+
+![Runtime vs Dimension (BKW and Pencil)](images/time_plot_both.png)
+
+---
+
+### Runtime vs Dimension (Pencil Only)
+
+Experiment: `plots/time_pencil.py`
+
+![Runtime vs Dimension (Pencil Only)](images/time_pencil.png)
+
+---
 
 ## License
 
